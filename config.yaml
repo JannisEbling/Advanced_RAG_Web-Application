@@ -1,0 +1,5 @@
+embedding_name: "Embedding_Small" # <huggingface_model_name> (thenlper/gte-small) | <Azure Deployment> (Embedding_Small)
+embedding_type: "AzureOpenAI" # AzureOpenAI | HuggingFace | Local
+collection_name: "TC19_Manual"
+llm_type: "AzureOpenAI" # llama | HuggingFace | AzureOpenAI
+llm_name: "Answering_35_0125" # llama2 | <huggingface_model_name> (HuggingFaceH4/zephyr-7b-beta)| <Azure Deployment> (Answering_35_0125)
