@@ -15,7 +15,6 @@ from langchain.retrievers.document_compressors import CohereRerank
 from langchain_chroma import Chroma
 from langchain_community.llms import Ollama
 from langchain_community.retrievers import BM25Retriever
-from langchain_core.load import dumpd, dumps, load, loads
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings

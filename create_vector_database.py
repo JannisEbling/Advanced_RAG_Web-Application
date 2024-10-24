@@ -67,6 +67,7 @@ def get_embedding_model():
         )
 
     if EMBEDDING_MODEL_TYPE == "Local":
+        embedding_model = None
         assert EMBEDDING_MODEL_TYPE == "Local" "Local is not implemented yet"
 
     return embedding_model
