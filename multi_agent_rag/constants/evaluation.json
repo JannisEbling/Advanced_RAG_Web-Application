@@ -1,0 +1,45 @@
+{
+    "question": [
+        "What is supervised learning in machine learning?",
+        "Who introduced the concept of backpropagation?",
+        "What is overfitting in a machine learning model?",
+        "What is the purpose of activation functions in neural networks?",
+        "How does dropout help prevent overfitting in neural networks?"
+    ],
+    "answer": [
+        "Supervised learning is a type of machine learning where the model is trained on labeled data.",
+        "The concept of backpropagation was popularized by Geoffrey Hinton.",
+        "Overfitting occurs when a machine learning model performs well on training data but poorly on new data.",
+        "Activation functions introduce non-linearity in neural networks, allowing them to model complex data patterns.",
+        "Dropout is a regularization technique that prevents overfitting by randomly ignoring certain neurons during training."
+    ],
+    "contexts": [
+        [
+            "Supervised learning is a machine learning approach in which a model is trained on input-output pairs with labels provided.",
+            "It is commonly used in tasks where we have known outputs, such as classification and regression."
+        ],
+        [
+            "Backpropagation is an algorithm used to train neural networks, enabling the network to adjust weights by calculating gradients.",
+            "The concept was popularized by Geoffrey Hinton in the 1980s."
+        ],
+        [
+            "Overfitting is a problem in machine learning where a model performs exceptionally well on training data but generalizes poorly on unseen data.",
+            "This often occurs when a model is too complex or trained for too many epochs on the same dataset."
+        ],
+        [
+            "Activation functions introduce non-linearity into the output of each layer in a neural network, allowing the network to capture complex relationships.",
+            "Common activation functions include ReLU, sigmoid, and tanh."
+        ],
+        [
+            "Dropout is a regularization technique in neural networks where, during training, random neurons are 'dropped' or ignored.",
+            "This helps the network avoid over-relying on specific neurons, which can help prevent overfitting."
+        ]
+    ],
+    "ground_truth": [
+        "Supervised learning is a type of machine learning where models are trained with labeled data.",
+        "Geoffrey Hinton popularized backpropagation.",
+        "Overfitting happens when a model fits the training data too well and performs poorly on new data.",
+        "Activation functions provide non-linearity in neural networks.",
+        "Dropout prevents overfitting by randomly dropping neurons during training."
+    ]
+}

@@ -1,31 +1,44 @@
-import requests
 import streamlit as st
 
-from main import invoke_rag
+from multi_agent_rag.pipeline.get_answer import invoke_single
 
 
-def get_response(user_input):
-    return invoke_rag(user_input)
+def main():
+    st.title("RAG Machine Learning")
 
+    # Get user input (query)
+    user_input = st.text_input("Enter your question:")
 
-# Set the title of the app
-st.title("LLM Question Answering System")
-
-# Info Icon for additional information
-st.sidebar.info(
-    "This app allows you to ask questions about LLMs.\n\n"
-    "Type your question in the box below and click 'Submit'.\n"
-    "You will receive an answer from an advanced AI language model (RAG-based)."
-)
-
-# User input for question about LLM
-user_input = st.text_input("Ask a question about LLMs:")
-
-
-if st.button("Submit"):
     if user_input:
-        answer = get_response(user_input)
-        st.write(answer)
+        # Display a loading spinner while invoking the pipeline
+        with st.spinner("Fetching answer..."):
+            result = invoke_single(user_input)
 
-    else:
-        st.write("Please enter a question.")
+        # Check if result is returned
+        if result:
+            # Assuming the result contains response, reranked_documents, and hallucination_state
+            response = result.get("response", "No response generated.")
+            reranked_documents = result.get("reranked_documents", [])
+            hallucination_state = result.get("hallucination_state", False)
+
+            # Display the results
+            st.subheader("Response")
+            st.write(response)
+
+            st.subheader("Documents")
+            if reranked_documents:
+                for doc in reranked_documents:
+                    st.write(doc)
+            else:
+                st.write("No documents found.")
+
+            st.subheader("Hallucination State")
+            st.write(
+                "Hallucination detected"
+                if hallucination_state
+                else "No hallucination detected"
+            )
+
+
+if __name__ == "__main__":
+    main()

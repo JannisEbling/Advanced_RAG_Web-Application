@@ -1,0 +1,2 @@
+embedding_type: "AzureOpenAI" # AzureOpenAI | HuggingFace
+embedding_name: "Embedding_Small" # <huggingface_model_name> (thenlper/gte-small) | <Azure Deployment> (Embedding_Small)
