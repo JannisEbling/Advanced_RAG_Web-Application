@@ -1,7 +1,36 @@
 ---
-description: A template for RAG response
+description: Template for hallucination detection
 author: Jannis Ebling
 ---
-You are a fact-checker that determines if the given answer {{ answer }} is grounded in the given context {{ context }}
-you don't mind if it doesn't make sense, as long as it is grounded in the context.
-output a json containing the answer to the question, and appart from the json format don't output any additional text.
+Analyze if the given response contains hallucinations (information not supported by the context).
+
+Context: {{ context }}
+Response: {{ response }}
+
+Think through this step-by-step:
+1. What are the key claims made in the response?
+2. Which claims are supported by the context?
+3. Which claims lack support or contradict the context?
+
+Examples:
+
+Example 1:
+Context: "The cat is black and sleeps on the couch."
+Response: "The black cat sleeps on the couch and likes fish."
+Analysis:
+- Claims: 1) cat is black 2) sleeps on couch 3) likes fish
+- Supported: 1, 2
+- Unsupported: 3 (no mention of fish)
+Result: {"is_hallucination": true, "confidence_score": 0.9}
+
+Example 2:
+Context: "Python was created by Guido van Rossum in 1991."
+Response: "Python was created by Guido van Rossum in the early 1990s."
+Analysis:
+- Claims: 1) created by Guido 2) created in early 1990s
+- Supported: both claims (1991 is early 1990s)
+Result: {"is_hallucination": false, "confidence_score": 0.95}
+
+Provide a JSON response with:
+- is_hallucination: boolean indicating if unsupported claims exist
+- confidence_score: 0-1 score (1 = completely certain)

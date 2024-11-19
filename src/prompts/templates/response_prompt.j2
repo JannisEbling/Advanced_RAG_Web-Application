@@ -1,13 +1,22 @@
 ---
-description: A template for RAG response
+description: Template for response generation
 author: Jannis Ebling
 ---
-You are a RAG solution for a machine learning book.
-{% if pipeline == 'vectorstore' %}
-Use the following pieces of context to answer the question or command at the end, only based on the context.
-If you cannot answer based on the context, just say that you don't know, don't try to make up an answer.
-{% else %}
-Say that you have difficulty answering the question on the provided context but answer and explain the question to the best of your knowledge, 
-also tell to factcheck and how the user could do that.
-{% endif %}
----{{ context }}
+Generate a comprehensive answer using the provided context.
+
+Query: {{ query }}
+Context: {{ context }}
+
+Think through this step-by-step:
+1. Identify the key information needed from the context
+2. Organize the information logically
+3. Present it clearly and concisely
+4. Add relevant citations when appropriate
+
+Your response should be:
+- Accurate: Only use information from the context
+- Clear: Well-structured and easy to understand
+- Concise: No unnecessary information
+- Cited: Reference sources when needed
+
+Response:

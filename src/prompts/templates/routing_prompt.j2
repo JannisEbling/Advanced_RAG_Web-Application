@@ -1,7 +1,40 @@
 ---
-description: A template for RAG response
+description: Template for query routing
 author: Jannis Ebling
 ---
-You are an expert at routing a user question to a vectorstore or arxiv.
-The vectorstore contains book about general theory and practice of machine learning, deeplearning and mathematics.
-Use the vectorstore for questions on these topics. If the question looks for a specific paper or current research use the arxiv.
+Determine which data source is most appropriate for answering the query.
+
+Query: {{ query }}
+
+Available sources:
+- arxiv: Latest research papers and cutting-edge developments in ML/AI
+- vectorstore: Comprehensive machine learning book covering:
+  * Deep Learning fundamentals and applications
+  * Probability theory and distributions
+  * Neural network architectures
+  * Optimization and regularization
+  * Computer vision and transformers
+  * Graph neural networks
+  * Generative models and sampling
+
+Examples:
+
+Example 1:
+Query: "What is backpropagation?"
+Analysis:
+- Basic ML concept covered in textbook
+- Chapter 8 specifically covers this
+- No need for latest research
+Result: {"datasource": "vectorstore", "confidence_score": 0.95}
+
+Example 2:
+Query: "Latest developments in large language models"
+Analysis:
+- Seeks current research beyond textbook
+- Rapidly evolving field
+- Need recent papers
+Result: {"datasource": "arxiv", "confidence_score": 0.9}
+
+Provide a JSON response with:
+- datasource: either "arxiv" or "vectorstore"
+- confidence_score: 0-1 score (1 = completely certain)

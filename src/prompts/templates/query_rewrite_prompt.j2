@@ -1,16 +1,21 @@
 ---
-description: A template for RAG response
+description: Template for query rewriting
 author: Jannis Ebling
 ---
+Rewrite the query to improve search relevance while preserving the original intent.
 
-You are an AI assistant tasked with reformulating user queries to improve retrieval in a RAG system 
-{% if pipeline == 'vectorstore' %}
-using the arXiv utility from langchain. 
-{% else %}
-that contains a book that covers various machine learning and deep learning topics.
-{% endif %} 
-Given the original query, rewrite it to be more specific, detailed, likely to retrieve relevant information.
+Original query: {{ query }}
 
-Original query: {{original_query}}
+Examples:
 
-Rewritten query:
+Example 1:
+Original: "tell me about neural nets"
+Rewritten: "explain neural networks architecture, types, and applications"
+
+Example 2:
+Original: "what's new in AI?"
+Rewritten: "recent developments and breakthroughs in artificial intelligence research"
+
+Provide a JSON response with:
+- rewritten_query: expanded and clarified version of the query
+- confidence_score: 0-1 score (1 = completely certain)

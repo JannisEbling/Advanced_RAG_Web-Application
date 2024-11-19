@@ -1,15 +1,13 @@
 ---
-description: A template for RAG response
+description: Template for chunk rewriting
 author: Jannis Ebling
 ---
+Rewrite the following text chunk to improve its searchability while preserving all original information. Generate a concise headline using the chunk content and chapter name.
 
-You are an AI assistant tasked with reformulating chunks of the original text to improve retrieval in a RAG system. 
-Given the original chunk, rewrite it to be more likely to be a match for relevant queries.
-Ensure the rewritten chunk preserves the key concepts from the original to enhance search relevance and do not add any information that wasnt given in the original chunk. 
-Also add a headline to the chunk, use the chunk information and the chapter name for that.
+Original chunk: {{ original_chunk }}
+Chapter name: {{ chapter_name }}
 
-Original chunk: {{original_chunk}}
-Chapter name: {{chapter_name}}
-
-Result should loo like "<headline>---<rewritten_chunk_content>"
-Rewritten chunk with headline:
+Provide a JSON response with:
+- headline: concise topic headline
+- rewritten_chunk: optimized text
+- confidence_score: 0-1 score (1 = perfect rewrite)

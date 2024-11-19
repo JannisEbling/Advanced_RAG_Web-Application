@@ -11,6 +11,9 @@ An advanced Retrieval-Augmented Generation (RAG) solution designed to tackle com
 - **Adaptive Planning**: Use agents to determine best plan to handle queries.
 - **Hallucination Detection**: Detects hallucination and chooses fitting actions.
 - **Performance Evaluation**: Utilizes `Ragas` metrics for comprehensive quality assessment.
+- **Centralized Prompt Management**: Uses Jinja2 templates for flexible and maintainable prompts.
+- **Structured Output Validation**: Implements Pydantic and Instructor for robust output validation.
+- **Centralized Model Factory**: Unified creation of LLM and embedding models for consistency.
 
 
 ## 🧠 How It Works
@@ -30,10 +33,12 @@ An advanced Retrieval-Augmented Generation (RAG) solution designed to tackle com
    - Re-plan remaining steps based on new information.
 9. **Final Answer Generation**: Produce the final answer using accumulated context and chain-of-thought reasoning.
 
+
 ## 📚 Schematic Architecture
 
 ![DataIngestionPipeline](images/dataingestionpipeline.png)
 ![DataRetrievalPipeline](images/dataretrievalpipeline.png)
+
 
 ## 📊 Evaluation
 
@@ -44,26 +49,31 @@ The solution is evaluated using `Ragas` metrics:
 - Context Recall
 - Answer Similarity
 
+
 ## 🔍 Use Case: Machine Learning Theory and Research
 
 This RAG application was developed to be used with the Book *"Deep Learning - Foundations and Concepts"* by Christoper M. Bishop and Hugh Bishop. Eventhough the techniques displayed in this project are universally applicable, some of the functions to preprocess and clean the text, as well as some of the system prompts are specifically designed for this usecase in mind.
 
+
 ## 🌟 Future Implementations
 
 - add evaluation pipeline
-- add web interface
-- chek all config with file paths
+- change vectorstore to more versatile postgresql database
 - Parent/Child Retriever
-- Fine-tuning embedding models
+- read in documents with Azure document intelligence
+- add features like adding document to web application
 - Multi Modal RAG
 - extract Key_entities and do a wikisearch or rag search on them to clarify understanding
+
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
 - Python 3.8+
-- API key for your chosen LLM provider
+- API key for your chosen LLM provider (Azure OpenAI recommended)
+- HuggingFace API key for embeddings
+
 
 ### Installation (without Docker)
 
@@ -72,35 +82,68 @@ This RAG application was developed to be used with the Book *"Deep Learning - Fo
    git clone https://github.com/JannisEbling/Advanced_Multi_Agent_RAG.git
    cd Advanced_Multi_Agent_RAG
    ```
+
 2. Set up environment variables:
-   Create a `.env` file in the root directory with the API key and Endpoint you want to use: 
+   Create a `.env` file in the root directory with your API keys: 
    ```
-   HUGGINGFACE_API_TOKEN = ""
-   AZURE_OPENAI_API_KEY = ""
-   AZURE_OPENAI_ENDPOINT = ""
-   GROQ_API_KEY = ""
-   ```
-
-## using Docker
-3. run the following command to build the docker image
-   ```sh
-   docker-compose up --build
+   HUGGINGFACE_API_KEY = "your_huggingface_key"
+   AZURE_OPENAI_API_KEY = "your_azure_key"
+   AZURE_OPENAI_ENDPOINT = "your_azure_endpoint"
+   AZURE_OPENAI_API_VERSION = "2024-02-15-preview"
+   AZURE_DEPLOYMENT_NAME = "your_deployment_name"
    ```
 
-## Installation (without Docker)
 3. Install required packages:
    ```sh
    pip install -r requirements.txt
    ```
 
-### Usage
-1. Run real-time agent visualization (no docker):
-   ```sh
-   streamlit run app.py
-   ```
 
-2. Run real-time agent visualization (with docker):
-   open your browser and go to `http://localhost:8501/`
+### Using Docker
+Run the following command to build and start the docker container:
+```sh
+docker-compose up --build
+```
+
+
+### Usage
+
+The application provides two main pipelines:
+
+1. **Document Addition Pipeline** (`add_docs.py`):
+   - Processes and adds new documents to the vector store
+   - Handles document chunking, cleaning, and embedding
+   - Run with:
+     ```sh
+     python src/pipelines/add_docs.py --input_path path/to/your/document.pdf
+     ```
+
+2. **Question Answering Pipeline** (`get_answer.py`):
+   - Handles user queries with intelligent routing
+   - Chooses between vector store and arXiv based on query type
+   - Run with:
+     ```sh
+     python src/pipelines/get_answer.py --question "Your question here"
+     ```
+
+
+### Key Components
+
+1. **Prompt Management**:
+   - Centralized in `src/prompts/`
+   - Uses Jinja2 templates for flexible prompt generation
+   - Easy to maintain and modify system behaviors
+
+2. **Model Management**:
+   - Centralized factories in `src/components/`
+   - `LLMFactory`: Creates and configures LLM instances
+   - `EmbeddingFactory`: Manages embedding model creation
+
+3. **Structured Output**:
+   - Uses Pydantic models for response validation
+   - Instructor integration for reliable structured output
+   - Type-safe responses throughout the pipeline
+
 
 ## 🛠️ Technologies Used
 
@@ -109,6 +152,7 @@ This RAG application was developed to be used with the Book *"Deep Learning - Fo
 - Streamlit (for visualization)
 - Ragas (for evaluation)
 - Flexible integration with various LLMs (Azure, OpenAI GPT models, Huggingface, Groq)
+
 
 ## 📄 License
 
