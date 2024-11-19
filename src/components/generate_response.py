@@ -1,9 +1,14 @@
 import sys
+from pydantic import BaseModel, Field
 
-from src.components.llms import get_llm_model
+from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
+
+
+class ResponseModel(BaseModel):
+    response: str = Field(description="Generated response based on the question and context")
 
 
 def generate_response(state):
@@ -40,14 +45,17 @@ def generate_response(state):
                                         context=context)
 
         # Generate response using the LLM
-        llm = get_llm_model("base_azure")
-        response = llm.invoke(prompt)
+        llm = LLMFactory(provider="azure")
+        result = llm.create_completion(
+            response_model=ResponseModel,
+            messages=[{"role": "user", "content": prompt}]
+        )
 
         logger.info("Response generated successfully")
-        logger.debug("Generated response: %s", response[:100])  # Log first 100 chars
+        logger.debug("Generated response: %s", result.response[:100])
 
         # Update the state with the response
-        state["response"] = response
+        state["response"] = result.response
         return state
 
     except Exception as e:

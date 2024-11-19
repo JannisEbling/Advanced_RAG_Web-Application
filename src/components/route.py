@@ -1,20 +1,17 @@
 import sys
 from typing import Literal
-
 from pydantic import BaseModel, Field
 
-from src.components.llms import get_llm_model
+from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
 
 class RouteQuery(BaseModel):
-    """Route a user query to the most relevant datasource."""
-
-    datasource: Literal["vectorstore", "arxiv_search"] = Field(
-        ...,
-        description="Given a user question choose to route it to arXiv or a vectorstore.",
+    """Response model for query routing."""
+    datasource: Literal["arxiv_search", "vectorstore_search"] = Field(
+        description="The datasource to use for the query"
     )
 
 
@@ -36,15 +33,16 @@ def route_question(state):
         # Get the prompt from PromptManager
         prompt = PromptManager.get_prompt("routing_prompt", question=question)
 
-        # Get LLM with structured output
-        llm = get_llm_model("base_azure")
-        structured_llm_router = llm.with_structured_output(RouteQuery)
+        # Get LLM and make routing decision
+        llm = LLMFactory(provider="azure")
+        result = llm.create_completion(
+            response_model=RouteQuery,
+            messages=[{"role": "user", "content": prompt}]
+        )
         
-        # Get routing decision
-        source = structured_llm_router.invoke(prompt)
-        logger.debug("Routing decision: %s", source.datasource)
+        logger.debug("Routing decision: %s", result.datasource)
 
-        if source.datasource == "arxiv_search":
+        if result.datasource == "arxiv_search":
             logger.info("Routing to arXiv search")
             return "rewrite_query_arxiv"
         else:

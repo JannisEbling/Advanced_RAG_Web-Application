@@ -1,9 +1,14 @@
 import sys
+from pydantic import BaseModel, Field
 
-from src.components.llms import get_llm_model
+from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
+
+
+class QueryRewriteResponse(BaseModel):
+    rewritten_query: str = Field(description="The rewritten query optimized for search")
 
 
 def rewrite_query(state, rewrite_type):
@@ -25,17 +30,20 @@ def rewrite_query(state, rewrite_type):
         # Determine which template to use based on the rewrite_type
         template_name = "vectorstore_query_rewrite_prompt" if rewrite_type == "rewrite_query_arxiv" else "arxiv_query_rewrite_prompt"
         
-        # Get the prompt from PromptManager and generate rewritten query
+        # Get the prompt from PromptManager
         prompt = PromptManager.get_prompt(template_name, original_query=original_query)
         
-        # Get the LLM model and generate the rewritten query
-        llm = get_llm_model("base_azure")
-        response = llm.invoke(prompt)
+        # Get LLM and rewrite query
+        llm = LLMFactory(provider="azure")
+        result = llm.create_completion(
+            response_model=QueryRewriteResponse,
+            messages=[{"role": "user", "content": prompt}]
+        )
 
         logger.info("Query successfully rewritten")
-        logger.debug("Rewritten query: %s", response[:100])  # Log first 100 chars
+        logger.debug("Rewritten query: %s", result.rewritten_query[:100])
 
-        return {"rewritten_query": response}
+        return {"rewritten_query": result.rewritten_query}
 
     except Exception as e:
         logger.error("An error occurred while rewriting query", exc_info=True)

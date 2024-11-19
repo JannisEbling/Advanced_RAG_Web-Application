@@ -1,8 +1,7 @@
 import sys
-
 from pydantic import BaseModel, Field
 
-from src.components.llms import get_llm_model
+from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
@@ -30,8 +29,7 @@ def rerank_documents(state, top_n: int = 3):
         docs = state["documents"]
 
         logger.info("Reranking documents for query: %s", query)
-        llm = get_llm_model("base_azure")
-        llm_with_output = llm.with_structured_output(RatingScore)
+        llm = LLMFactory(provider="azure")
 
         scored_docs = []
         for doc in docs:
@@ -42,7 +40,10 @@ def rerank_documents(state, top_n: int = 3):
                                                 doc=doc.page_content)
                 
                 # Get relevance score using LLM
-                result = llm_with_output.invoke(prompt)
+                result = llm.create_completion(
+                    response_model=RatingScore,
+                    messages=[{"role": "user", "content": prompt}]
+                )
                 score = float(result.relevance_score)
                 scored_docs.append((doc, score))
                 logger.debug("Document scored with relevance: %f", score)

@@ -3,8 +3,9 @@ from typing import Any, Dict, List, Type
 import instructor
 from anthropic import Anthropic
 from config.settings import get_settings
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI
 from pydantic import BaseModel, Field
+from src.secure.secrets import secrets
 
 
 class LLMFactory:
@@ -16,6 +17,13 @@ class LLMFactory:
     def _initialize_client(self) -> Any:
         client_initializers = {
             "openai": lambda s: instructor.from_openai(OpenAI(api_key=s.api_key)),
+            "azure": lambda s: instructor.from_openai(
+                AzureOpenAI(
+                    api_key=secrets.get_secret("AZURE_OPENAI_API_KEY"),
+                    api_version=s.api_version,
+                    azure_endpoint=secrets.get_secret("AZURE_OPENAI_ENDPOINT"),
+                )
+            ),
             "anthropic": lambda s: instructor.from_anthropic(
                 Anthropic(api_key=s.api_key)
             ),
@@ -41,6 +49,11 @@ class LLMFactory:
             "response_model": response_model,
             "messages": messages,
         }
+
+        # For Azure OpenAI, we need to use deployment_id instead of model
+        if self.provider == "azure":
+            completion_params["deployment_id"] = completion_params.pop("model")
+
         return self.client.chat.completions.create(**completion_params)
 
 

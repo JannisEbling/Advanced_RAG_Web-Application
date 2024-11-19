@@ -2,19 +2,19 @@ import sys
 
 from pydantic import BaseModel, Field
 
-from src.components.llms import get_llm_model
+from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
 
 class IsGroundedOnFacts(BaseModel):
-    """
-    Output schema for the grounded-on-facts detection.
-    """
-
+    """Response model for hallucination detection."""
     grounded_on_facts: bool = Field(
-        description="Answer is grounded in the facts, 'yes' or 'no'"
+        description="Whether the answer is grounded on facts from the context"
+    )
+    explanation: str = Field(
+        description="Explanation of why the answer is or is not grounded on facts"
     )
 
 
@@ -42,12 +42,14 @@ def is_answer_grounded_on_context(state):
                                         answer=answer)
 
         # Get LLM with structured output
-        llm = get_llm_model("base_azure")
-        structured_llm = llm.with_structured_output(IsGroundedOnFacts)
-        
-        # Check if answer is grounded on facts
-        result = structured_llm.invoke(prompt)
+        llm = LLMFactory(provider="azure")
+        result = llm.create_completion(
+            response_model=IsGroundedOnFacts,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
         logger.debug("Grounding check result: %s", result.grounded_on_facts)
+        logger.debug("Explanation: %s", result.explanation)
 
         if result.grounded_on_facts:
             logger.info("Answer is grounded on facts")
