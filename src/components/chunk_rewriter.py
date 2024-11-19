@@ -1,9 +1,7 @@
 import sys
 
-from langchain.prompts import PromptTemplate
-
 from src.components.llms import get_llm_model
-from src.config.prompts import CHUNK_REWRITE_PROMPT
+from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
@@ -23,20 +21,17 @@ def rewrite_chunk(original_chunk, chapter_name):
         logger.info("Starting chunk rewrite process.")
         logger.debug("Original chunk: %s", original_chunk[:100])
         logger.debug("Chapter name: %s", chapter_name)
-
-        chunk_rewrite_prompt = PromptTemplate(
-            input_variables=["original_chunk", "chapter_name"],
-            template=CHUNK_REWRITE_PROMPT,
-        )
+        # Get the prompt template directly from PromptManager
+        prompt_template = PromptManager.get_prompt("chunk_rewrite_prompt", 
+                                                 original_chunk=original_chunk,
+                                                 chapter_name=chapter_name)
+        
         llm = get_llm_model("base_azure")
-        chunk_rewriter = chunk_rewrite_prompt | llm
+        response = llm.invoke(prompt_template)
 
-        response = chunk_rewriter.invoke(
-            {"original_chunk": original_chunk, "chapter_name": chapter_name}
-        )
-
+        logger.debug("Rewritten chunk: %s", response[:100])
         logger.info("Chunk rewrite completed successfully.")
-        return response.content
+        return response
 
     except Exception as e:
         logger.error("An error occurred during chunk rewriting.", exc_info=True)

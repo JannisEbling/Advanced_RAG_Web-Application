@@ -1,12 +1,7 @@
 import sys
 
-from langchain.prompts import PromptTemplate
-
 from src.components.llms import get_llm_model
-from src.config.prompts import (
-    ARXIV_QUERY_REWRITE_PROMPT,
-    VECTORSTORE_QUERY_REWRITE_PROMPT,
-)
+from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
@@ -28,27 +23,22 @@ def rewrite_query(state, rewrite_type):
         logger.info("Starting query rewriting for question: %s", original_query)
 
         # Determine which template to use based on the rewrite_type
-        if rewrite_type == "rewrite_query_arxiv":
-            template = VECTORSTORE_QUERY_REWRITE_PROMPT
-        else:
-            template = ARXIV_QUERY_REWRITE_PROMPT
-
-        # Create the prompt for query rewriting
-        query_rewrite_prompt = PromptTemplate(
-            input_variables=["original_query"], template=template
-        )
-
-        # Get the LLM model to rewrite the query
+        template_name = "vectorstore_query_rewrite_prompt" if rewrite_type == "rewrite_query_arxiv" else "arxiv_query_rewrite_prompt"
+        
+        # Get the prompt from PromptManager and generate rewritten query
+        prompt = PromptManager.get_prompt(template_name, original_query=original_query)
+        
+        # Get the LLM model and generate the rewritten query
         llm = get_llm_model("base_azure")
-        query_rewriter = query_rewrite_prompt | llm
+        response = llm.invoke(prompt)
 
-        # Invoke the query rewriting process
-        response = query_rewriter.invoke(original_query)
+        logger.info("Query successfully rewritten")
+        logger.debug("Rewritten query: %s", response[:100])  # Log first 100 chars
 
-        logger.info("Query successfully rewritten.")
-        return {"rewritten_query": response.content}
+        return {"rewritten_query": response}
 
     except Exception as e:
-        logger.error("An error occurred while rewriting the query.", exc_info=True)
-        # Raise a custom exception with details
-        raise MultiAgentRAGException("Query rewriting failed", sys) from e
+        logger.error("An error occurred while rewriting query", exc_info=True)
+        raise MultiAgentRAGException(
+            "Failed to rewrite query", sys
+        ) from e

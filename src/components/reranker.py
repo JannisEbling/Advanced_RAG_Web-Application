@@ -1,10 +1,9 @@
 import sys
 
-from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
 from src.components.llms import get_llm_model
-from src.config.prompts import RERANKING_PROMPT
+from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
@@ -31,33 +30,36 @@ def rerank_documents(state, top_n: int = 3):
         docs = state["documents"]
 
         logger.info("Reranking documents for query: %s", query)
-
-        prompt_template = PromptTemplate(
-            input_variables=["query", "doc"],
-            template=RERANKING_PROMPT,
-        )
-
         llm = get_llm_model("base_azure")
-        llm_chain = prompt_template | llm.with_structured_output(RatingScore)
+        llm_with_output = llm.with_structured_output(RatingScore)
 
         scored_docs = []
-
         for doc in docs:
-            input_data = {"query": query, "doc": doc.page_content}
             try:
-                score = llm_chain.invoke(input_data).relevance_score
-                score = float(score)
-            except (ValueError, TypeError):
+                # Get prompt from PromptManager for each document
+                prompt = PromptManager.get_prompt("reranking_prompt", 
+                                                query=query,
+                                                doc=doc.page_content)
+                
+                # Get relevance score using LLM
+                result = llm_with_output.invoke(prompt)
+                score = float(result.relevance_score)
+                scored_docs.append((doc, score))
+                logger.debug("Document scored with relevance: %f", score)
+            except (ValueError, TypeError) as e:
                 logger.warning("Failed to parse score for document: %s", doc)
-                score = 0
+                continue
 
-            scored_docs.append((doc, score))
+        # Sort documents by score in descending order and take top_n
+        reranked_docs = [doc for doc, _ in sorted(scored_docs, key=lambda x: x[1], reverse=True)[:top_n]]
+        
+        logger.info("Successfully reranked documents")
+        logger.debug("Top %d documents selected", len(reranked_docs))
 
-        reranked_docs = sorted(scored_docs, key=lambda x: x[1], reverse=True)
-
-        logger.info("Top %d documents ranked successfully.", top_n)
-        return {"reranked_documents": [doc for doc, _ in reranked_docs[:top_n]]}
+        return {"reranked_documents": reranked_docs}
 
     except Exception as e:
-        logger.error("An error occurred while reranking documents.", exc_info=True)
-        raise MultiAgentRAGException("Document reranking failed", sys) from e
+        logger.error("An error occurred while reranking documents", exc_info=True)
+        raise MultiAgentRAGException(
+            "Failed to rerank documents", sys
+        ) from e

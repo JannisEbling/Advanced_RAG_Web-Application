@@ -1,11 +1,10 @@
 import sys
 from typing import Literal
 
-from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
 from src.components.llms import get_llm_model
-from src.config.prompts import ROUTING_PROMPT
+from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
@@ -34,33 +33,26 @@ def route_question(state):
         question = state["question"]
         logger.debug("Routing question: %s", question)
 
+        # Get the prompt from PromptManager
+        prompt = PromptManager.get_prompt("routing_prompt", question=question)
+
+        # Get LLM with structured output
         llm = get_llm_model("base_azure")
         structured_llm_router = llm.with_structured_output(RouteQuery)
-
-        route_prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", ROUTING_PROMPT),
-                ("human", "{question}"),
-            ]
-        )
-        question_router = route_prompt | structured_llm_router
-
-        source = question_router.invoke({"question": question})
+        
+        # Get routing decision
+        source = structured_llm_router.invoke(prompt)
         logger.debug("Routing decision: %s", source.datasource)
 
         if source.datasource == "arxiv_search":
-            logger.info("Routing question to arXiv search.")
-            return "arxiv_search"
-        elif source.datasource == "vectorstore":
-            logger.info("Routing question to vectorstore.")
-            return "vectorstore"
+            logger.info("Routing to arXiv search")
+            return "rewrite_query_arxiv"
         else:
-            logger.warning(
-                "Routing decision returned an unexpected datasource: %s",
-                source.datasource,
-            )
-            return "unknown_source"
+            logger.info("Routing to vectorstore search")
+            return "rewrite_query_vectorstore"
 
     except Exception as e:
-        logger.error("An error occurred while routing the question.", exc_info=True)
-        raise MultiAgentRAGException("Failed to route question", sys) from e
+        logger.error("An error occurred while routing question", exc_info=True)
+        raise MultiAgentRAGException(
+            "Failed to route question", sys
+        ) from e

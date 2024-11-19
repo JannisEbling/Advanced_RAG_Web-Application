@@ -1,10 +1,9 @@
 import sys
 
-from langchain.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 
 from src.components.llms import get_llm_model
-from src.config.prompts import HALLUCINATION_DETECION_PROMPT
+from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
@@ -37,29 +36,28 @@ def is_answer_grounded_on_context(state):
         logger.debug("Context for grounding check: %s", context[:100])
         logger.debug("Answer to check for grounding: %s", answer[:100])
 
+        # Get the prompt from PromptManager
+        prompt = PromptManager.get_prompt("hallucination_detection_prompt", 
+                                        context=context,
+                                        answer=answer)
+
+        # Get LLM with structured output
         llm = get_llm_model("base_azure")
-        is_grounded_on_facts_prompt = PromptTemplate(
-            template=HALLUCINATION_DETECION_PROMPT,
-            input_variables=["context", "answer"],
-        )
-        is_grounded_on_facts_chain = (
-            is_grounded_on_facts_prompt | llm.with_structured_output(IsGroundedOnFacts)
-        )
+        structured_llm = llm.with_structured_output(IsGroundedOnFacts)
+        
+        # Check if answer is grounded on facts
+        result = structured_llm.invoke(prompt)
+        logger.debug("Grounding check result: %s", result.grounded_on_facts)
 
-        result = is_grounded_on_facts_chain.invoke(
-            {"context": context, "answer": answer}
-        )
-        grounded_on_facts = result.grounded_on_facts
-
-        if grounded_on_facts:
-            logger.info("The answer is grounded in the facts.")
-            return "grounded on context"
+        if result.grounded_on_facts:
+            logger.info("Answer is grounded on facts")
+            return "end"
         else:
-            logger.warning("The answer is identified as a hallucination.")
-            return "hallucination"
+            logger.info("Answer is not grounded on facts, regenerating response")
+            return "generate_alternative_response"
 
     except Exception as e:
-        logger.error("An error occurred during hallucination detection.", exc_info=True)
+        logger.error("An error occurred during hallucination detection", exc_info=True)
         raise MultiAgentRAGException(
-            "Failed to determine if the answer is grounded on context", sys
+            "Failed to check if answer is grounded on facts", sys
         ) from e

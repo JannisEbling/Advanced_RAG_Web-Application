@@ -1,12 +1,7 @@
 import sys
 
-from langchain_core.prompts import ChatPromptTemplate
-
 from src.components.llms import get_llm_model
-from src.config.prompts import (
-    ALTERNATIVE_RESPONSE_PROMPT,
-    RESPONSE_PROMPT,
-)
+from src.prompts.prompt_manager import PromptManager
 from src.exception.exception import MultiAgentRAGException
 from src.logging import logger
 
@@ -32,41 +27,31 @@ def generate_response(state):
         logger.debug(
             "Documents to be used for context: %s",
             [doc.page_content[:100] for doc in documents],
-        )  # Log the first 100 characters of each document for brevity
-
-        # Determine the appropriate system prompt based on hallucination state
-        system_prompt = (
-            ALTERNATIVE_RESPONSE_PROMPT if hallucination_state else RESPONSE_PROMPT
         )
 
-        # Create the prompt using the provided question and documents
-        prompt_template = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                ("user", "{input}"),
-            ]
-        )
+        # Get document texts
         document_texts = [doc.page_content for doc in documents]
-        formatted_prompt = prompt_template.format_messages(
-            input=question, context="\n".join(document_texts)
-        )
+        context = "\n".join(document_texts)
 
-        # Log the formatted prompt that will be sent to the LLM
-        logger.debug("Formatted prompt to LLM: %s", formatted_prompt)
+        # Get the appropriate prompt template based on hallucination state
+        template_name = "alternative_response_prompt" if hallucination_state else "response_prompt"
+        prompt = PromptManager.get_prompt(template_name, 
+                                        input=question,
+                                        context=context)
 
-        # Get the LLM model and generate the response
+        # Generate response using the LLM
         llm = get_llm_model("base_azure")
-        response = llm(formatted_prompt)
+        response = llm.invoke(prompt)
 
-        # Log the response received from the LLM
-        logger.info(
-            "Response generated from LLM: %s", response.content[:200]
-        )  # Log the first 200 characters for brevity
+        logger.info("Response generated successfully")
+        logger.debug("Generated response: %s", response[:100])  # Log first 100 chars
 
-        # Return the response as part of the state
-        return {"response": response.content}
+        # Update the state with the response
+        state["response"] = response
+        return state
 
     except Exception as e:
-        logger.error("Error occurred while generating LLM response", exc_info=True)
-        # Raise a custom exception to handle this error further up the chain
-        raise MultiAgentRAGException("Failed to generate LLM response", sys) from e
+        logger.error("An error occurred while generating response", exc_info=True)
+        raise MultiAgentRAGException(
+            "Failed to generate response", sys
+        ) from e
