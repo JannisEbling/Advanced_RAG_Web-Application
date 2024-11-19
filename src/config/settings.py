@@ -5,7 +5,8 @@ from typing import Optional, Literal
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-load_dotenv()
+from src.config.logger import logger
+from src.exceptions import RAGPipelineError
 
 
 class Config:

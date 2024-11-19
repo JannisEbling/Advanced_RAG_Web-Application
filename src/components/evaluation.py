@@ -1,15 +1,13 @@
 import json
-
-from datasets import Dataset
-from ragas import evaluate
-from ragas.metrics import (
+from src.datasets import Dataset
+from src.ragas import evaluate
+from src.ragas.metrics import (
     answer_correctness,
     answer_relevancy,
     answer_similarity,
     context_recall,
     faithfulness,
 )
-
 from src.components.llm_factory import LLMFactory
 
 

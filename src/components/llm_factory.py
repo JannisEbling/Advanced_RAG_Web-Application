@@ -1,9 +1,9 @@
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Optional
 
 import instructor
-from anthropic import Anthropic
-from config.settings import get_settings
-from openai import OpenAI, AzureOpenAI
+from src.anthropic import Anthropic
+from src.config.settings import get_settings
+from src.openai import OpenAI, AzureOpenAI
 from pydantic import BaseModel, Field
 from src.secure.secrets import secrets
 

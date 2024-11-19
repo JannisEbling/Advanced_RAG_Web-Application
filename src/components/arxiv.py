@@ -1,38 +1,36 @@
-import sys
+from typing import List
 
 from langchain.schema import Document
 from langchain_community.tools import ArxivQueryRun
 from langchain_community.utilities import ArxivAPIWrapper
 
-from src.exception.exception import MultiAgentRAGException
-from src.logging import logger
+from src import logger, DocumentProcessingError
 
 
-def arxiv_search(state):
+def arxiv_search(state) -> List[Document]:
     """
-    arxiv search based on the query.
+    Perform arxiv search based on the query.
 
     Args:
-        state (dict): The current graph state
+        state: State object containing the query and other parameters
 
     Returns:
-        state (dict): Updates documents key with appended web results
+        List of Document objects from arxiv search results
+
+    Raises:
+        DocumentProcessingError: If arxiv search fails
     """
     try:
-        logger.info("Starting arxiv search.")
-
-        arxiv_wrapper = ArxivAPIWrapper(top_k_results=1, doc_content_chars_max=200)
-        arxiv = ArxivQueryRun(api_wrapper=arxiv_wrapper)
-        question = state["question"]
-
-        logger.debug("Querying Arxiv with question: %s", question)
-        docs = arxiv.invoke({"query": question})
-
-        arxiv_results = Document(page_content=docs)
-        logger.info("Arxiv search completed successfully.")
-
-        return {"documents": arxiv_results, "query": question}
-
+        logger.info("Starting arxiv search")
+        arxiv = ArxivQueryRun(api_wrapper=ArxivAPIWrapper())
+        docs = arxiv.run(state.query)
+        logger.info(f"Found {len(docs)} documents from arxiv")
+        return docs
     except Exception as e:
-        logger.error("An error occurred during Arxiv search.", exc_info=True)
-        raise MultiAgentRAGException("Failed to complete Arxiv search", sys) from e
+        raise DocumentProcessingError(
+            "Failed to perform arxiv search",
+            details={
+                "query": state.query,
+                "error": str(e)
+            }
+        )

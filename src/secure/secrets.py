@@ -1,14 +1,13 @@
 """Secure secrets management using system keyring."""
 
-from typing import Optional
 import os
 from pathlib import Path
-from dotenv import load_dotenv
-import keyring
-import logging
-from functools import lru_cache
+from typing import Optional
 
-logger = logging.getLogger(__name__)
+import keyring
+from dotenv import load_dotenv
+
+from src import logger, RAGPipelineError
 
 
 class SecretsManager:
@@ -32,7 +31,6 @@ class SecretsManager:
         if env_path.exists():
             load_dotenv(env_path)
 
-    @lru_cache()
     def get_secret(self, key_name: str) -> Optional[str]:
         """Get a secret from the system keyring or environment variables.
 
@@ -65,8 +63,6 @@ class SecretsManager:
             value: Value to store
         """
         keyring.set_password(self.service_name, key_name, value)
-        # Clear the cache so next get_secret call fetches fresh value
-        self.get_secret.cache_clear()
 
     def delete_secret(self, key_name: str) -> None:
         """Delete a secret from the system keyring.
@@ -76,8 +72,6 @@ class SecretsManager:
         """
         try:
             keyring.delete_password(self.service_name, key_name)
-            # Clear the cache after deletion
-            self.get_secret.cache_clear()
         except keyring.errors.PasswordDeleteError:
             logger.warning(f"Secret {key_name} not found in keyring")
 

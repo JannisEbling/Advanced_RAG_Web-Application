@@ -1,7 +1,9 @@
 import re
 
 import fitz
-from langchain.docstore.document import Document
+from langchain.schema import Document
+
+from src import logger, DocumentProcessingError
 
 
 def replace_t_with_space(text):
@@ -122,7 +124,87 @@ def filter_recurrent_obsolescences_with_remove(text):
         cleaned_text (str): The text string with removed non-informative parts.
     """
     substrings = [
-        "© The Author(s), under exclusive license to Springer Nature Switzerland AG 2024 \nC. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_"
+        " The Author(s), under exclusive license to Springer Nature Switzerland AG 2024 \nC. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_"
     ]
     cleaned_text = remove_substrings(text, substrings)
     return cleaned_text
+
+
+class DocumentCleaner:
+    """Cleans and preprocesses documents for the RAG pipeline."""
+
+    def clean_documents(self, documents):
+        """
+        Clean and preprocess a list of documents.
+
+        Args:
+            documents: List of documents to clean
+
+        Returns:
+            List of cleaned documents
+
+        Raises:
+            DocumentProcessingError: If document cleaning fails
+        """
+        if not documents:
+            raise DocumentProcessingError(
+                "Empty document list provided for cleaning",
+                details={"num_docs": 0}
+            )
+
+        try:
+            logger.info("Cleaning %d documents", len(documents))
+            cleaned_docs = []
+            
+            for doc in documents:
+                cleaned_content = self._clean_text(doc.page_content)
+                if cleaned_content.strip():  # Only keep non-empty documents
+                    cleaned_doc = Document(
+                        page_content=cleaned_content,
+                        metadata=doc.metadata
+                    )
+                    cleaned_docs.append(cleaned_doc)
+            
+            logger.info("Successfully cleaned %d documents", len(cleaned_docs))
+            return cleaned_docs
+
+        except Exception as e:
+            raise DocumentProcessingError(
+                "Failed to clean documents",
+                details={
+                    "num_docs": len(documents),
+                    "error": str(e)
+                }
+            )
+
+    def _clean_text(self, text):
+        """
+        Clean a single text string.
+
+        Args:
+            text: Text to clean
+
+        Returns:
+            Cleaned text
+        """
+        if not text:
+            return ""
+
+        try:
+            # Remove excessive whitespace
+            cleaned = " ".join(text.split())
+            
+            # Remove very short lines (likely noise)
+            lines = [line for line in cleaned.splitlines() if len(line.strip()) > 10]
+            cleaned = "\n".join(lines)
+            
+            return cleaned
+
+        except Exception as e:
+            raise DocumentProcessingError(
+                "Failed to clean text",
+                details={
+                    "text_length": len(text),
+                    "error": str(e)
+                }
+            )

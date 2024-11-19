@@ -1,10 +1,10 @@
-from typing import Any
+from typing import Any, List
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import AzureOpenAIEmbeddings
 
 from config.settings import get_settings
-from src.exception.exception import MultiAgentRAGException
+from src.exception.exception import DocumentProcessingError
 from src.logging import logger
 from src.secure.secrets import secrets
 
@@ -15,14 +15,28 @@ class EmbeddingFactory:
         Initialize the EmbeddingFactory with a provider.
 
         Args:
-            provider (str): The embedding provider to use (e.g., "azure", "huggingface")
+            provider: The embedding provider to use (e.g., "azure", "huggingface")
+
+        Raises:
+            DocumentProcessingError: If initialization fails
         """
         self.provider = provider
-        self.settings = getattr(get_settings(), provider)
+        try:
+            self.settings = getattr(get_settings(), provider)
+        except AttributeError:
+            raise DocumentProcessingError(
+                f"Invalid embedding provider configuration",
+                details={"provider": provider},
+            )
         self.model = self._initialize_model()
 
     def _initialize_model(self) -> Any:
-        """Initialize and return the embedding model based on the provider."""
+        """
+        Initialize and return the embedding model based on the provider.
+
+        Raises:
+            DocumentProcessingError: If model initialization fails
+        """
         model_initializers = {
             "azure": self._initialize_azure_openai,
             "huggingface": self._initialize_huggingface,
@@ -30,80 +44,151 @@ class EmbeddingFactory:
 
         initializer = model_initializers.get(self.provider)
         if not initializer:
-            raise MultiAgentRAGException(f"Unsupported embedding provider: {self.provider}")
+            raise DocumentProcessingError(
+                "Unsupported embedding provider",
+                details={"provider": self.provider, "supported_providers": list(model_initializers.keys())},
+            )
 
         try:
             model = initializer()
             logger.info("Successfully initialized %s embedding model", self.provider)
             return model
         except Exception as e:
-            logger.error("Failed to initialize embedding model", exc_info=True)
-            raise MultiAgentRAGException(
-                f"Failed to initialize {self.provider} embedding model: {str(e)}"
-            ) from e
+            raise DocumentProcessingError(
+                f"Failed to initialize embedding model",
+                details={
+                    "provider": self.provider,
+                    "error": str(e),
+                },
+            )
 
     def _initialize_azure_openai(self) -> AzureOpenAIEmbeddings:
-        """Initialize Azure OpenAI embeddings."""
+        """
+        Initialize Azure OpenAI embeddings.
+
+        Raises:
+            DocumentProcessingError: If Azure credentials are missing or invalid
+        """
         api_key = secrets.get_secret("AZURE_OPENAI_API_KEY")
         api_endpoint = secrets.get_secret("AZURE_OPENAI_ENDPOINT")
 
         if not api_key or not api_endpoint:
-            raise MultiAgentRAGException(
-                "Azure OpenAI credentials not found. Please run init_secrets.py to set them up."
+            raise DocumentProcessingError(
+                "Azure OpenAI credentials not found",
+                details={
+                    "missing_credentials": [
+                        k for k, v in {"api_key": api_key, "api_endpoint": api_endpoint}.items() 
+                        if not v
+                    ],
+                },
             )
 
-        return AzureOpenAIEmbeddings(
-            azure_deployment=self.settings.deployment_name,
-            azure_endpoint=api_endpoint,
-            api_key=api_key,
-            api_version=self.settings.api_version,
-            dimensions=self.settings.dimensions,
-        )
+        try:
+            return AzureOpenAIEmbeddings(
+                azure_deployment=self.settings.deployment_name,
+                azure_endpoint=api_endpoint,
+                api_key=api_key,
+                api_version=self.settings.api_version,
+                dimensions=self.settings.dimensions,
+            )
+        except Exception as e:
+            raise DocumentProcessingError(
+                "Failed to initialize Azure OpenAI embeddings",
+                details={
+                    "deployment": self.settings.deployment_name,
+                    "error": str(e),
+                },
+            )
 
     def _initialize_huggingface(self) -> HuggingFaceEmbeddings:
-        """Initialize HuggingFace embeddings."""
-        logger.info("Initializing HuggingFace Embeddings model")
-        return HuggingFaceEmbeddings(
-            model_name=self.settings.model_name,
-            multi_process=True,
-            model_kwargs={"device": self.settings.device},
-            encode_kwargs={"normalize_embeddings": True},
-        )
+        """
+        Initialize HuggingFace embeddings.
 
-    def create_embeddings(self, texts: list[str]) -> list[list[float]]:
+        Raises:
+            DocumentProcessingError: If HuggingFace model initialization fails
+        """
+        logger.info("Initializing HuggingFace Embeddings model")
+        try:
+            return HuggingFaceEmbeddings(
+                model_name=self.settings.model_name,
+                multi_process=True,
+                model_kwargs={"device": self.settings.device},
+                encode_kwargs={"normalize_embeddings": True},
+            )
+        except Exception as e:
+            raise DocumentProcessingError(
+                "Failed to initialize HuggingFace embeddings",
+                details={
+                    "model": self.settings.model_name,
+                    "device": self.settings.device,
+                    "error": str(e),
+                },
+            )
+
+    def create_embeddings(self, texts: List[str]) -> List[List[float]]:
         """
         Create embeddings for a list of texts.
 
         Args:
-            texts (list[str]): List of texts to create embeddings for
+            texts: List of texts to create embeddings for
 
         Returns:
-            list[list[float]]: List of embeddings
+            List of embeddings
+
+        Raises:
+            DocumentProcessingError: If embedding creation fails
         """
+        if not texts:
+            raise DocumentProcessingError(
+                "Empty text list provided for embedding",
+                details={"num_texts": 0},
+            )
+
         try:
             logger.debug("Creating embeddings for %d texts", len(texts))
             embeddings = self.model.embed_documents(texts)
             logger.debug("Successfully created embeddings")
             return embeddings
         except Exception as e:
-            logger.error("Failed to create embeddings", exc_info=True)
-            raise MultiAgentRAGException(f"Failed to create embeddings: {str(e)}") from e
+            raise DocumentProcessingError(
+                "Failed to create embeddings",
+                details={
+                    "num_texts": len(texts),
+                    "provider": self.provider,
+                    "error": str(e),
+                },
+            )
 
-    def create_embedding(self, text: str) -> list[float]:
+    def create_embedding(self, text: str) -> List[float]:
         """
         Create embedding for a single text.
 
         Args:
-            text (str): Text to create embedding for
+            text: Text to create embedding for
 
         Returns:
-            list[float]: Embedding vector
+            Embedding vector
+
+        Raises:
+            DocumentProcessingError: If embedding creation fails
         """
+        if not text.strip():
+            raise DocumentProcessingError(
+                "Empty text provided for embedding",
+                details={"text_length": 0},
+            )
+
         try:
-            logger.debug("Creating embedding for text")
+            logger.debug("Creating embedding for text: %s", text[:100])
             embedding = self.model.embed_query(text)
             logger.debug("Successfully created embedding")
             return embedding
         except Exception as e:
-            logger.error("Failed to create embedding", exc_info=True)
-            raise MultiAgentRAGException(f"Failed to create embedding: {str(e)}") from e
+            raise DocumentProcessingError(
+                "Failed to create single embedding",
+                details={
+                    "text_preview": text[:100],
+                    "provider": self.provider,
+                    "error": str(e),
+                },
+            )

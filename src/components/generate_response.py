@@ -1,65 +1,127 @@
-import sys
-from pydantic import BaseModel, Field
+from typing import List, Dict, Any
 
-from src.components.llm_factory import LLMFactory
+from langchain.schema import Document
+from langchain_openai import AzureOpenAI
+
+from src import logger, GenerationError
+from src.secure.secrets import secrets
 from src.prompts.prompt_manager import PromptManager
-from src.exception.exception import MultiAgentRAGException
-from src.logging import logger
 
 
-class ResponseModel(BaseModel):
-    response: str = Field(description="Generated response based on the question and context")
+class ResponseGenerator:
+    """Generates responses based on retrieved documents and user queries."""
 
+    def __init__(self, model_name: str = "gpt-4"):
+        """
+        Initialize the response generator.
 
-def generate_response(state):
-    """
-    Generate a response from a LLM based on the question and documents in the state.
+        Args:
+            model_name: Name of the Azure OpenAI model to use
 
-    Args:
-        state (dict): The current graph state, containing 'question', 'documents', and 'hallucination_state'
+        Raises:
+            GenerationError: If initialization fails
+        """
+        try:
+            self.model_name = model_name
+            self.llm = AzureOpenAI(
+                azure_deployment=model_name,
+                api_version=secrets.get_secret("AZURE_OPENAI_API_VERSION"),
+                azure_endpoint=secrets.get_secret("AZURE_OPENAI_ENDPOINT"),
+                api_key=secrets.get_secret("AZURE_OPENAI_API_KEY"),
+                temperature=0.7,
+            )
+            self.prompt_manager = PromptManager()
+            logger.info("Initialized ResponseGenerator with model %s", model_name)
+        except Exception as e:
+            raise GenerationError(
+                "Failed to initialize ResponseGenerator",
+                details={
+                    "model": model_name,
+                    "error": str(e)
+                }
+            )
 
-    Returns:
-        dict: New key added to state, 'response', which contains the generated LLM response
-    """
-    try:
-        # Extract question and documents from the state
-        question = state["question"]
-        documents = state["documents"]
-        hallucination_state = state.get("hallucination_state", False)
+    def generate_response(
+        self, 
+        query: str, 
+        context_docs: List[Document],
+        chat_history: List[Dict[str, str]] = None
+    ) -> str:
+        """
+        Generate a response based on the query and context documents.
 
-        # Log the details of the current question and documents
-        logger.info("Generating response for the question: %s", question)
-        logger.debug(
-            "Documents to be used for context: %s",
-            [doc.page_content[:100] for doc in documents],
-        )
+        Args:
+            query: User's query
+            context_docs: Retrieved context documents
+            chat_history: Optional chat history for context
 
-        # Get document texts
-        document_texts = [doc.page_content for doc in documents]
-        context = "\n".join(document_texts)
+        Returns:
+            Generated response
 
-        # Get the appropriate prompt template based on hallucination state
-        template_name = "alternative_response_prompt" if hallucination_state else "response_prompt"
-        prompt = PromptManager.get_prompt(template_name, 
-                                        input=question,
-                                        context=context)
+        Raises:
+            GenerationError: If response generation fails
+        """
+        if not query.strip():
+            raise GenerationError(
+                "Empty query provided for response generation",
+                details={"query_length": 0}
+            )
 
-        # Generate response using the LLM
-        llm = LLMFactory(provider="azure")
-        result = llm.create_completion(
-            response_model=ResponseModel,
-            messages=[{"role": "user", "content": prompt}]
-        )
+        if not context_docs:
+            raise GenerationError(
+                "No context documents provided for response generation",
+                details={"num_docs": 0}
+            )
 
-        logger.info("Response generated successfully")
-        logger.debug("Generated response: %s", result.response[:100])
+        try:
+            logger.info("Generating response for query")
+            context = self._prepare_context(context_docs)
+            prompt = self.prompt_manager.get_response_prompt(
+                query=query,
+                context=context,
+                chat_history=chat_history or []
+            )
+            
+            response = self.llm.invoke(prompt)
+            logger.info("Successfully generated response")
+            return response
+            
+        except Exception as e:
+            raise GenerationError(
+                "Failed to generate response",
+                details={
+                    "query_length": len(query),
+                    "num_docs": len(context_docs),
+                    "has_history": bool(chat_history),
+                    "model": self.model_name,
+                    "error": str(e)
+                }
+            )
 
-        # Update the state with the response
-        state["response"] = result.response
-        return state
+    def _prepare_context(self, docs: List[Document]) -> str:
+        """
+        Prepare context documents for the prompt.
 
-    except Exception as e:
-        logger.error("An error occurred while generating response", exc_info=True)
-        raise MultiAgentRAGException(
-            "Failed to generate response", sys
-        ) from e
+        Args:
+            docs: List of context documents
+
+        Returns:
+            Formatted context string
+        """
+        try:
+            context_parts = []
+            for i, doc in enumerate(docs, 1):
+                content = doc.page_content.strip()
+                source = doc.metadata.get('source', f'Document {i}')
+                context_parts.append(f"[{source}]: {content}")
+            
+            return "\n\n".join(context_parts)
+            
+        except Exception as e:
+            raise GenerationError(
+                "Failed to prepare context",
+                details={
+                    "num_docs": len(docs),
+                    "error": str(e)
+                }
+            )

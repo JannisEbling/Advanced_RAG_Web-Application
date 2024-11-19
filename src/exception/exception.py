@@ -1,23 +1,48 @@
-import sys
-
-from src.logging import logger
+from typing import Optional
 
 
-class MultiAgentRAGException(Exception):
-    def __init__(self, error_message, error_details: sys):
-        self.error_message = error_message
-        _, _, exc_tb = error_details.exc_info()
+class RAGPipelineError(Exception):
+    """Base exception for RAG pipeline errors with improved error messages."""
 
-        self.lineno = exc_tb.tb_lineno
-        self.file_name = exc_tb.tb_frame.f_code.co_filename
+    def __init__(self, message: str, component: str, details: Optional[dict] = None):
+        self.component = component
+        self.details = details or {}
+        self.message = self._format_message(message)
+        super().__init__(self.message)
 
-    def __str__(self):
-        return f"Error occured in python script name [{self.file_name}] line number [{self.lineno}] error message [{str(self.error_message)}]"
+    def _format_message(self, message: str) -> str:
+        """Format the error message with component and details."""
+        error_msg = f"[{self.component}] {message}"
+        if self.details:
+            error_msg += "\nDetails:"
+            for key, value in self.details.items():
+                error_msg += f"\n  - {key}: {value}"
+        return error_msg
 
 
-if __name__ == "__main__":
-    try:
-        logger.logging.info("Test exception handling")
-        a = 1 / 0
-    except Exception as e:
-        raise MultiAgentRAGException(e, sys) from e
+class DocumentProcessingError(RAGPipelineError):
+    """Error during document processing."""
+
+    def __init__(self, message: str, details: Optional[dict] = None):
+        super().__init__(message, "Document Processing", details)
+
+
+class RetrievalError(RAGPipelineError):
+    """Error during document retrieval."""
+
+    def __init__(self, message: str, details: Optional[dict] = None):
+        super().__init__(message, "Retrieval", details)
+
+
+class GenerationError(RAGPipelineError):
+    """Error during response generation."""
+
+    def __init__(self, message: str, details: Optional[dict] = None):
+        super().__init__(message, "Generation", details)
+
+
+class RoutingError(RAGPipelineError):
+    """Error during query routing."""
+
+    def __init__(self, message: str, details: Optional[dict] = None):
+        super().__init__(message, "Routing", details)
