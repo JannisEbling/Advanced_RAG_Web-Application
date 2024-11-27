@@ -5,8 +5,9 @@ An advanced Retrieval-Augmented Generation (RAG) solution designed to tackle com
 
 ## 🌟 Key Features
 
+- **Azure Document Intelligence**: Uses Document Intelligence to extract text and images.
 - **Intelligent Chunking and Chunk Cleaning**: Split documents by chapters and split into chunks with overlap.
-- **Optimising Chunk Content**: Rewrites chunk and adds a chunk header for optimal information retrieval
+- **Optimising Chunk Content**: Adds a chunk header for optimal information retrieval
 - **Optimised document retrieval**: Implemented query revision, ensemble retriever and reranker.
 - **Adaptive Planning**: Use agents to determine best plan to handle queries.
 - **Hallucination Detection**: Detects hallucination and chooses fitting actions.
@@ -14,12 +15,13 @@ An advanced Retrieval-Augmented Generation (RAG) solution designed to tackle com
 - **Centralized Prompt Management**: Uses Jinja2 templates for flexible and maintainable prompts.
 - **Structured Output Validation**: Implements Pydantic and Instructor for robust output validation.
 - **Centralized Model Factory**: Unified creation of LLM and embedding models for consistency.
+- **Multi Modal RAG**: Can use extracted figures and formulas for response generation.
+
 
 
 ## 🧠 How It Works
-![DataRetrievalGraph](images/Retrieval_Graph.png)
 
-1. **PDF Loading and Processing**: Load PDF document and split into chapters.
+1. **PDF Loading and Processing**: Extract text and images from PDF with Azure Document Intelligence.
 2. **Text Preprocessing**: Clean and preprocess the text for better encoding.
 3. **Optimize Chunk Text**: Generate new chunk content in an optimized way with a chunk header.
 4. **Vector Store Encoding**: Encode the chunks into vector stores for efficient retrieval.
@@ -54,17 +56,13 @@ The solution is evaluated using `Ragas` metrics:
 
 This RAG application was developed to be used with the Book *"Deep Learning - Foundations and Concepts"* by Christoper M. Bishop and Hugh Bishop. Eventhough the techniques displayed in this project are universally applicable, some of the functions to preprocess and clean the text, as well as some of the system prompts are specifically designed for this usecase in mind.
 
-![alt text](references/images/example_output.png.png)
+![example_output](references/images/example_output.png)
 
 
 ## 🌟 Future Implementations
 
 - add evaluation pipeline
-- change vectorstore to more versatile postgresql database
 - Parent/Child Retriever
-- read in documents with Azure document intelligence
-- add features like adding document to web application
-- Multi Modal RAG
 - extract Key_entities and do a wikisearch or rag search on them to clarify understanding
 
 
