@@ -148,10 +148,13 @@ The application provides two main pipelines:
 ## 🛠️ Technologies Used
 
 - LangChain / LangGraph
-- Chrome Vector Store
+- Azure Document Intelligence
+- Jinja2 (for prompt management)
+- Pydantic, Instructor (for structured output)
+- postgresql (for vector and artifact(figures and formulas) storage)
 - Streamlit (for visualization)
 - Ragas (for evaluation)
-- Flexible integration with various LLMs (Azure, OpenAI GPT models, Huggingface, Groq)
+- Flexible integration with various LLMs (Azure, OpenAI GPT models, Anthropic,Huggingface, Groq)
 
 
 ## 📄 License
