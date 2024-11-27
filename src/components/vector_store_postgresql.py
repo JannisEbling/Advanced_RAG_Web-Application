@@ -282,7 +282,7 @@ class VectorStore:
                         id UUID PRIMARY KEY,
                         image_path TEXT,
                         caption TEXT,
-                        figure_ref TEXT UNIQUE
+                        figure_ref TEXT
                     );
                 """)
                 self.db_conn.commit()

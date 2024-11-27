@@ -107,6 +107,7 @@ def route_question(state: Any) -> str:
                 "Routing to vectorstore search with confidence %.2f",
                 result.confidence_score,
             )
+            state.response = "Routing to vectorstore search"
         return state
 
     except RoutingError:

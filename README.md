@@ -36,8 +36,8 @@ An advanced Retrieval-Augmented Generation (RAG) solution designed to tackle com
 
 ## 📚 Schematic Architecture
 
-![DataIngestionPipeline](images/dataingestionpipeline.png)
-![DataRetrievalPipeline](images/dataretrievalpipeline.png)
+![DataIngestionPipeline](references/images/dataingestionpipeline.png)
+![DataRetrievalPipeline](references/images/dataretrievalpipeline.png)
 
 
 ## 📊 Evaluation
@@ -53,6 +53,8 @@ The solution is evaluated using `Ragas` metrics:
 ## 🔍 Use Case: Machine Learning Theory and Research
 
 This RAG application was developed to be used with the Book *"Deep Learning - Foundations and Concepts"* by Christoper M. Bishop and Hugh Bishop. Eventhough the techniques displayed in this project are universally applicable, some of the functions to preprocess and clean the text, as well as some of the system prompts are specifically designed for this usecase in mind.
+
+![alt text](references/images/example_output.png.png)
 
 
 ## 🌟 Future Implementations

@@ -10,7 +10,11 @@ from src.prompts.prompt_manager import PromptManager
 
 class GenerationResponse(BaseModel):
     """Model for generation response."""
+
     response: str = Field(description="Generated response text")
+    figures: List[str] = Field(
+        description="List of paths to figures that got referenced in the response"
+    )
 
 
 class ResponseGenerator:
@@ -46,7 +50,9 @@ class ResponseGenerator:
             GenerationError: If response generation fails
         """
         try:
-            if not hasattr(state, "question") or not hasattr(state, "reranked_documents"):
+            if not hasattr(state, "question") or not hasattr(
+                state, "reranked_documents"
+            ):
                 raise GenerationError(
                     "Missing required state components for generation",
                     details={"available_attributes": dir(state)},
@@ -67,12 +73,21 @@ class ResponseGenerator:
                 # Include relevance info in context
                 context = f"[Relevance: {doc.metadata.get('relevance_score', 'N/A')}]\n{doc.page_content}"
                 context_texts.append(context)
+            figure_captions = [figure["caption"] for figure in state.figures]
+            figure_paths = [figure["path"] for figure in state.figures]
+            formulas = [
+                formula["reference"] + ": " + formula["metadata"]
+                for formula in state.formulas
+            ]
 
             # Get generation prompt
             prompt = PromptManager.get_prompt(
                 "generation_prompt",
                 query=query,
                 context="\n\n".join(context_texts),
+                figure_captions=figure_captions,
+                figure_paths=figure_paths,
+                formulas=formulas,
             )
 
             # Generate structured response
@@ -86,6 +101,7 @@ class ResponseGenerator:
 
             # Update state with response and sources
             state.response = result.response
+            state.figure_paths = result.figures
             return state
 
         except GenerationError:

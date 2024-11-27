@@ -1,0 +1,1710 @@
+[
+  {
+    "id": 0,
+    "content": "113",
+    "role": "pageNumber",
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 0,
+        "length": 25
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          6.31,
+          0.4953,
+          6.5628,
+          0.4959,
+          6.5625,
+          0.6312,
+          6.3097,
+          0.6307
+        ]
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "content": "4.1. Linear Regression",
+    "role": "pageHeader",
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 26,
+        "length": 44
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          4.4409,
+          0.4905,
+          5.8511,
+          0.4965,
+          5.8504,
+          0.6577,
+          4.4402,
+          0.6517
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "content": "Figure 4.1 The linear regression model (4.3) can be ex- pressed as a simple neural network diagram involving a single layer of parameters. Here each basis function øj(x) is represented by an input node, with the solid node repre- senting the 'bias' basis function do, and the function y(x, w) is represented by an output node. Each of the parameters wj is shown by a line connecting the corresponding basis function to the output.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 94,
+        "length": 430
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          0.9671,
+          0.9003,
+          4.1649,
+          0.9029,
+          4.1638,
+          2.2994,
+          0.9659,
+          2.2969
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "content": "ØM-1(x)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 539,
+        "length": 7
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          4.517,
+          0.9941,
+          5.0157,
+          0.9939,
+          5.0158,
+          1.143,
+          4.5171,
+          1.1433
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "content": "WM-1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 548,
+        "length": 4
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          5.6054,
+          1.1477,
+          5.9399,
+          1.1538,
+          5.9382,
+          1.2455,
+          5.6037,
+          1.2394
+        ]
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "content": "...",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 554,
+        "length": 3
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          5.2253,
+          1.2976,
+          5.2418,
+          1.2976,
+          5.2418,
+          1.4026,
+          5.2253,
+          1.4026
+        ]
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "content": "y(x, w)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 559,
+        "length": 7
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          6.115,
+          1.2923,
+          6.5281,
+          1.2899,
+          6.5289,
+          1.4334,
+          6.1159,
+          1.4359
+        ]
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "content": "+1 (x)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 568,
+        "length": 6
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          4.6985,
+          1.558,
+          5.013,
+          1.5549,
+          5.0145,
+          1.7024,
+          4.6999,
+          1.7055
+        ]
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "content": "W1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 576,
+        "length": 2
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          5.6981,
+          1.5058,
+          5.8459,
+          1.5091,
+          5.844,
+          1.5991,
+          5.6961,
+          1.5958
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "content": "Po(x)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 580,
+        "length": 5
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          4.7004,
+          1.9349,
+          5.015,
+          1.9348,
+          5.015,
+          2.0832,
+          4.7005,
+          2.0833
+        ]
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "content": "Wo",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 587,
+        "length": 2
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          5.6978,
+          1.9176,
+          5.8516,
+          1.9199,
+          5.8502,
+          2.0084,
+          5.6964,
+          2.006
+        ]
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "content": "Before the advent of deep learning it was common practice in machine learning to use some form of fixed pre-processing of the input variables x, also known as fea- ture extraction, expressed in terms of a set of basis functions {{j(x)}. The goal was to choose a sufficiently powerful set of basis functions that the resulting learning task could be solved using a simple network model. Unfortunately, it is very difficult to hand-craft suitable basis functions for anything but the simplest applications. Deep learning avoids this problem by learning the required nonlinear transformations of the data from the data set itself.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 603,
+        "length": 627
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          1.6726,
+          2.583,
+          6.5734,
+          2.5835,
+          6.5732,
+          3.9051,
+          1.6725,
+          3.9046
+        ]
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "content": "Chapter 1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 1232,
+        "length": 9
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          0.4342,
+          4.0842,
+          1.0254,
+          4.0856,
+          1.0251,
+          4.2447,
+          0.4338,
+          4.2433
+        ]
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "content": "We have already encountered an example of a regression problem when we dis- cussed curve fitting using polynomials. The polynomial function (1.1) can be ex- pressed in the form (4.3) if we consider a single input variable x and if we choose basis functions defined by øj(x) = x3. There are many other possible choices for the basis functions, for example",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 1243,
+        "length": 354
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          1.6742,
+          3.9163,
+          6.5663,
+          3.915,
+          6.5666,
+          4.7458,
+          1.6744,
+          4.7471
+        ]
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "content": "Øj(x) = exp {",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 1599,
+        "length": 13
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          3.2461,
+          4.8684,
+          4.1404,
+          4.8604,
+          4.1437,
+          5.2322,
+          3.2494,
+          5.2402
+        ]
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "content": "(x- Mj) 2) 2s2 } (4.4)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 1614,
+        "length": 22
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          4.2853,
+          4.8604,
+          6.5587,
+          4.867,
+          6.5575,
+          5.2732,
+          4.2841,
+          5.2667
+        ]
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "content": "where the pj govern the locations of the basis functions in input space, and the parameter s governs their spatial scale. These are usually referred to as 'Gaussian' basis functions, although it should be noted that they are not required to have a probabilistic interpretation. In particular the normalization coefficient is unimportant because these basis functions will be multiplied by learnable parameters wj.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 1638,
+        "length": 413
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          1.6731,
+          5.3473,
+          6.5652,
+          5.343,
+          6.5659,
+          6.1876,
+          1.6739,
+          6.1919
+        ]
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "content": "Another possibility is the sigmoidal basis function of the form",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2053,
+        "length": 63
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          1.9275,
+          6.1759,
+          5.5555,
+          6.177,
+          5.5554,
+          6.3432,
+          1.9275,
+          6.342
+        ]
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "content": "Øj(x) = 0",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2118,
+        "length": 9
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          3.4626,
+          6.5646,
+          4.0972,
+          6.568,
+          4.0963,
+          6.7413,
+          3.4616,
+          6.7378
+        ]
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "content": "s ) (4.5)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2129,
+        "length": 9
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          4.4216,
+          6.4606,
+          6.5544,
+          6.4431,
+          6.5573,
+          6.8035,
+          4.4246,
+          6.821
+        ]
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "content": "where o (a) is the logistic sigmoid function defined by",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2140,
+        "length": 55
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          1.6763,
+          6.9459,
+          4.8374,
+          6.9469,
+          4.8374,
+          7.1164,
+          1.6763,
+          7.1154
+        ]
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "content": "σ(α) = 1 + exp(-a) 1 (4.6) .",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2197,
+        "length": 28
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          3.4508,
+          7.2278,
+          6.5598,
+          7.2402,
+          6.5584,
+          7.5942,
+          3.4494,
+          7.5818
+        ]
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "content": "Equivalently, we can use the tanh function because this is related to the logistic sigmoid by tanh(a) = 20(2a) - 1, and so a general linear combination of logistic sigmoid functions is equivalent to a general linear combination of tanh functions in the sense that they can represent the same class of input-output functions. These various choices of basis function are illustrated in Figure 4.2.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2227,
+        "length": 395
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          1.6713,
+          7.6972,
+          6.5629,
+          7.695,
+          6.5633,
+          8.5223,
+          1.6717,
+          8.5245
+        ]
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "content": "Exercise 4.3",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2624,
+        "length": 12
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          0.4305,
+          8.0354,
+          1.1552,
+          8.0339,
+          1.1555,
+          8.1762,
+          0.4308,
+          8.1778
+        ]
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "content": "114",
+    "role": "pageNumber",
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2658,
+        "length": 25
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.4405,
+          0.4923,
+          0.6887,
+          0.4932,
+          0.6882,
+          0.6288,
+          0.44,
+          0.6279
+        ]
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "content": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+    "role": "pageHeader",
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2684,
+        "length": 58
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.1418,
+          0.4888,
+          4.3265,
+          0.4861,
+          4.3266,
+          0.6369,
+          1.1419,
+          0.6395
+        ]
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "content": "1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2958,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.79,
+          1.0094,
+          0.842,
+          1.0098,
+          0.8414,
+          1.1175,
+          0.7893,
+          1.1171
+        ]
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "content": "1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2961,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          2.7342,
+          1.0101,
+          2.7866,
+          1.0103,
+          2.7862,
+          1.1149,
+          2.7338,
+          1.1147
+        ]
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "content": "1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2964,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          4.868,
+          1.0093,
+          4.9251,
+          1.0095,
+          4.9246,
+          1.119,
+          4.8675,
+          1.1188
+        ]
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "content": "0.5",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2967,
+        "length": 3
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.6881,
+          1.3583,
+          0.8536,
+          1.3567,
+          0.8547,
+          1.4798,
+          0.6892,
+          1.4813
+        ]
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "content": "0.75",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2972,
+        "length": 4
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          2.6654,
+          1.3588,
+          2.8916,
+          1.3595,
+          2.8912,
+          1.4799,
+          2.665,
+          1.4792
+        ]
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "content": "0.75",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2978,
+        "length": 4
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          4.702,
+          1.3615,
+          4.9299,
+          1.3611,
+          4.9301,
+          1.4806,
+          4.7022,
+          1.481
+        ]
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "content": "0",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2984,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.7852,
+          1.7227,
+          0.8492,
+          1.7227,
+          0.8491,
+          1.8326,
+          0.7851,
+          1.8326
+        ]
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "content": "0.5",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2987,
+        "length": 3
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          2.6979,
+          1.7186,
+          2.8579,
+          1.7192,
+          2.8575,
+          1.837,
+          2.6974,
+          1.8364
+        ]
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "content": "0.5",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2992,
+        "length": 3
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          4.7691,
+          1.7181,
+          4.9285,
+          1.719,
+          4.9279,
+          1.8364,
+          4.7684,
+          1.8354
+        ]
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "content": "-0.5",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2997,
+        "length": 4
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.6227,
+          2.08,
+          0.8557,
+          2.0785,
+          0.8564,
+          2.1962,
+          0.6234,
+          2.1977
+        ]
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "content": "0.25",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3003,
+        "length": 4
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          2.6668,
+          2.0793,
+          2.891,
+          2.0788,
+          2.8913,
+          2.1989,
+          2.667,
+          2.1994
+        ]
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "content": "0.25",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3009,
+        "length": 4
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          4.7045,
+          2.079,
+          4.9324,
+          2.0786,
+          4.9327,
+          2.1987,
+          4.7048,
+          2.1992
+        ]
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "content": "-1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3015,
+        "length": 2
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.7148,
+          2.4443,
+          0.8454,
+          2.4424,
+          0.8469,
+          2.5445,
+          0.7163,
+          2.5464
+        ]
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "content": "0",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3019,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          2.7312,
+          2.4377,
+          2.7973,
+          2.4377,
+          2.7973,
+          2.5494,
+          2.7312,
+          2.5494
+        ]
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "content": "0",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3022,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          4.8617,
+          2.4389,
+          4.9265,
+          2.4386,
+          4.927,
+          2.5477,
+          4.8622,
+          2.548
+        ]
+      }
+    ]
+  },
+  {
+    "id": 41,
+    "content": "-1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3025,
+        "length": 2
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.7836,
+          2.5513,
+          0.919,
+          2.5511,
+          0.9191,
+          2.6547,
+          0.7837,
+          2.6549
+        ]
+      }
+    ]
+  },
+  {
+    "id": 42,
+    "content": "0",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3029,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.5701,
+          2.5469,
+          1.6387,
+          2.5474,
+          1.638,
+          2.6586,
+          1.5693,
+          2.6582
+        ]
+      }
+    ]
+  },
+  {
+    "id": 43,
+    "content": "1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3032,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          2.2918,
+          2.5498,
+          2.344,
+          2.55,
+          2.3436,
+          2.6553,
+          2.2914,
+          2.6551
+        ]
+      }
+    ]
+  },
+  {
+    "id": 44,
+    "content": "-1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3035,
+        "length": 2
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          2.8278,
+          2.5535,
+          2.9557,
+          2.5537,
+          2.9556,
+          2.6501,
+          2.8276,
+          2.6498
+        ]
+      }
+    ]
+  },
+  {
+    "id": 45,
+    "content": "0",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3039,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          3.6107,
+          2.5463,
+          3.6782,
+          2.5464,
+          3.6781,
+          2.6573,
+          3.6106,
+          2.6572
+        ]
+      }
+    ]
+  },
+  {
+    "id": 46,
+    "content": "1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3042,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          4.3325,
+          2.5516,
+          4.3826,
+          2.5517,
+          4.3824,
+          2.6541,
+          4.3323,
+          2.654
+        ]
+      }
+    ]
+  },
+  {
+    "id": 47,
+    "content": "-1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3045,
+        "length": 2
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          4.8653,
+          2.5546,
+          4.9983,
+          2.5542,
+          4.9986,
+          2.6497,
+          4.8656,
+          2.6501
+        ]
+      }
+    ]
+  },
+  {
+    "id": 48,
+    "content": "0",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3049,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          5.6507,
+          2.5493,
+          5.7185,
+          2.5495,
+          5.7182,
+          2.657,
+          5.6504,
+          2.6568
+        ]
+      }
+    ]
+  },
+  {
+    "id": 49,
+    "content": "1",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3052,
+        "length": 1
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          6.3715,
+          2.5521,
+          6.4233,
+          2.5522,
+          6.4232,
+          2.654,
+          6.3714,
+          2.6539
+        ]
+      }
+    ]
+  },
+  {
+    "id": 50,
+    "content": "Figure 4.2 Examples of basis functions, showing polynomials on the left, Gaussians of the form (4.4) in the centre, and sigmoidal basis functions of the form (4.5) on the right.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 2766,
+        "length": 177
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.4307,
+          3.0128,
+          6.5671,
+          3.0129,
+          6.5671,
+          3.3106,
+          0.4307,
+          3.3106
+        ]
+      }
+    ]
+  },
+  {
+    "id": 51,
+    "content": "Yet another possible choice of basis function is the Fourier basis, which leads to an expansion in sinusoidal functions. Each basis function represents a specific fre- quency and has infinite spatial extent. By contrast, basis functions that are localized to finite regions of input space necessarily comprise a spectrum of different spatial frequencies. In signal processing applications, it is often of interest to consider basis functions that are localized in both space and frequency, leading to a class of func- tions known as wavelets (Ogden, 1997; Mallat, 1999; Vidakovic, 1999). These are also defined to be mutually orthogonal, to simplify their application. Wavelets are most applicable when the input values live on a regular lattice, such as the successive time points in a temporal sequence or the pixels in an image.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3067,
+        "length": 831
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.678,
+          3.5842,
+          6.5687,
+          3.5832,
+          6.569,
+          5.2524,
+          1.6783,
+          5.2534
+        ]
+      }
+    ]
+  },
+  {
+    "id": 52,
+    "content": "Most of the discussion in this chapter, however, is independent of the choice of basis function set, and so we will not specify the particular form of the basis func- tions, except for numerical illustration. Furthermore, to keep the notation simple, we will focus on the case of a single target variable t, although we will briefly outline the modifications needed to deal with multiple target variables.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 3900,
+        "length": 405
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.6779,
+          5.2441,
+          6.5777,
+          5.2415,
+          6.5781,
+          6.0762,
+          1.6784,
+          6.0788
+        ]
+      }
+    ]
+  },
+  {
+    "id": 53,
+    "content": "Section 4.1.7",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4307,
+        "length": 13
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.432,
+          5.9077,
+          1.2088,
+          5.91,
+          1.2083,
+          6.0593,
+          0.4315,
+          6.057
+        ]
+      }
+    ]
+  },
+  {
+    "id": 54,
+    "content": "4.1.2 Likelihood function",
+    "role": "sectionHeading",
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4323,
+        "length": 27
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.9288,
+          6.1811,
+          3.9231,
+          6.1844,
+          3.9228,
+          6.3582,
+          1.9285,
+          6.3549
+        ]
+      }
+    ]
+  },
+  {
+    "id": 55,
+    "content": "Section 1.2",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4352,
+        "length": 11
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.4312,
+          6.6048,
+          1.0926,
+          6.6064,
+          1.0923,
+          6.7512,
+          0.4309,
+          6.7496
+        ]
+      }
+    ]
+  },
+  {
+    "id": 56,
+    "content": "We solved the problem of fitting a polynomial function to data by minimizing a sum-of-squares error function, and we also showed that this error function could be motivated as the maximum likelihood solution under an assumed Gaussian noise model. We now return to this discussion and consider the least-squares approach, and its relation to maximum likelihood, in more detail.",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4365,
+        "length": 376
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.677,
+          6.433,
+          6.5689,
+          6.4332,
+          6.5689,
+          7.2589,
+          1.677,
+          7.2587
+        ]
+      }
+    ]
+  },
+  {
+    "id": 57,
+    "content": "As before, we assume that the target variable t is given by a deterministic func- tion y(x, w) with additive Gaussian noise so that",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4743,
+        "length": 131
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.6784,
+          7.2694,
+          6.5628,
+          7.258,
+          6.5636,
+          7.5896,
+          1.6792,
+          7.6009
+        ]
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "content": "t = y(x, w) + € (4.7)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4876,
+        "length": 21
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          3.6386,
+          7.7353,
+          6.5623,
+          7.7369,
+          6.5622,
+          7.9006,
+          3.6385,
+          7.899
+        ]
+      }
+    ]
+  },
+  {
+    "id": 59,
+    "content": "where e is a zero-mean Gaussian random variable with variance o2. Thus, we can write",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4899,
+        "length": 84
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          1.6775,
+          8.0225,
+          6.5683,
+          8.0266,
+          6.5681,
+          8.3412,
+          1.6773,
+          8.337
+        ]
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "content": "p(t|x, w,o2)=N(t|y(x,w), o2). (4.8)",
+    "role": null,
+    "related_figures": [],
+    "related_formulas": [],
+    "spans": [
+      {
+        "offset": 4985,
+        "length": 35
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          3.0928,
+          8.3521,
+          6.5626,
+          8.334,
+          6.5636,
+          8.5257,
+          3.0938,
+          8.5438
+        ]
+      }
+    ]
+  }
+]

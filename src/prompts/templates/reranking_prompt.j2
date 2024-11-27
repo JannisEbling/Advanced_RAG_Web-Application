@@ -2,38 +2,44 @@
 description: Template for document reranking
 author: Jannis Ebling
 ---
-Evaluate how relevant the document is to answering the query.
+Evaluate how relevant the document is to answering the query. Be very strict about matching the exact concepts and topics.
 
 Query: {{ query }}
 Document: {{ document }}
 
 Think through this step-by-step:
-1. What is the main intent of the query?
-2. What key information does the document contain?
-3. How well does the document address the query intent?
+1. What specific concepts or topics does the query ask about?
+2. Are these exact concepts present and explained in the document?
+3. How directly does the document address these concepts?
+4. Is the document providing substantive information about the query topic or just mentioning it in passing?
+
+Scoring Guidelines:
+- 0.9-1.0: Document directly explains the exact concept(s) from the query
+- 0.7-0.8: Document discusses the concept but may not be comprehensive
+- 0.4-0.6: Document mentions the concept but focuses on related topics
+- 0.1-0.3: Document only tangentially relates to the query
+- 0.0-0.1: Document doesn't contain the queried concept
 
 Examples:
 
 Example 1:
-Query: "What are the symptoms of COVID-19?"
-Document: "COVID-19 symptoms include fever, cough, and fatigue. Most people develop symptoms 5-6 days after exposure."
+Query: "What is backpropagation?"
+Document: "Backpropagation is an algorithm for training neural networks that calculates gradients by propagating errors backwards through the network layers. It uses the chain rule to compute partial derivatives of the loss function with respect to weights."
 Analysis:
-- Query seeks symptom information
-- Document directly lists symptoms and timing
-- Highly relevant, comprehensive answer
-Result: {"decision_reason":"Query seeks symptom information. Document directly lists symptoms and timing, Highly relevant, comprehensive answer",
-"relevance_score": 0.95}
+- Query asks about backpropagation algorithm
+- Document directly explains backpropagation and its core mechanics
+- Provides specific details about gradient calculation and chain rule
+Result: {"explanation":"Document directly explains backpropagation, its purpose in neural networks, and its key mechanisms", "relevance_score": 0.95}
 
 Example 2:
-Query: "How do I bake chocolate chip cookies?"
-Document: "Chocolate was first used by the Mayans in 1500 BCE."
+Query: "What is backpropagation?"
+Document: "Neural networks can be visualized as connected layers of nodes. Each connection has a weight that determines how signals propagate forward."
 Analysis:
-- Query seeks baking instructions
-- Document discusses chocolate history
-- Not relevant to baking process
-Result: {"decision_reason":"Query seeks baking instructions. Document discusses chocolate history. Not relevant to baking process",
-"relevance_score": 0.1}
+- Query asks about backpropagation
+- Document only discusses neural network structure
+- No mention or explanation of backpropagation
+Result: {"explanation":"Document discusses neural networks but doesn't mention or explain backpropagation", "relevance_score": 0.2}
 
 Provide a JSON response with:
-- explaination: detailed explanation of why this document is relevant or not
+- explanation: detailed analysis of the document's relevance to the query
 - relevance_score: 0-1 score (1 = perfectly relevant)

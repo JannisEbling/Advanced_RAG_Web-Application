@@ -1,0 +1,70 @@
+[
+  {
+    "id": 0,
+    "caption": {
+      "content": "Figure 4.1 The linear regression model (4.3) can be ex- pressed as a simple neural network diagram involving a single layer of parameters. Here each basis function \u00f8j(x) is represented by an input node, with the solid node repre- senting the 'bias' basis function do, and the function y(x, w) is represented by an output node. Each of the parameters wj is shown by a line connecting the corresponding basis function to the output.",
+      "spans": [
+        {
+          "offset": 94,
+          "length": 430
+        }
+      ]
+    },
+    "spans": [
+      {
+        "offset": 73,
+        "length": 527
+      }
+    ],
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          4.499,
+          0.8988,
+          6.5459,
+          0.8988,
+          6.5465,
+          2.1731,
+          4.4996,
+          2.173
+        ]
+      }
+    ],
+    "image_path": "c:\\Projekte\\Data_Science\\Advanced_RAG_Web-Application\\analysis_results\\figures\\Figure_4.1.png"
+  },
+  {
+    "id": 1,
+    "caption": {
+      "content": "Figure 4.2 Examples of basis functions, showing polynomials on the left, Gaussians of the form (4.4) in the centre, and sigmoidal basis functions of the form (4.5) on the right.",
+      "spans": [
+        {
+          "offset": 2766,
+          "length": 177
+        }
+      ]
+    },
+    "spans": [
+      {
+        "offset": 2745,
+        "length": 319
+      }
+    ],
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.621,
+          0.9787,
+          6.4438,
+          0.9785,
+          6.4427,
+          2.6904,
+          0.6195,
+          2.6905
+        ]
+      }
+    ],
+    "image_path": "c:\\Projekte\\Data_Science\\Advanced_RAG_Web-Application\\analysis_results\\figures\\Figure_4.2.png"
+  }
+]

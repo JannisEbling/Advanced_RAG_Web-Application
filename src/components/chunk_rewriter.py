@@ -15,13 +15,12 @@ class ChunkRewriteResponse(BaseModel):
     )
 
 
-def rewrite_chunk(original_chunk: str, chapter_name: str) -> str:
+def write_header(doc) -> str:
     """
     Rewrites the chunk by generating a headline that captures its main topic.
 
     Args:
-        original_chunk: The original chunk of text
-        chapter_name: The chapter name
+        doc (Document): The chunk to be rewritten
 
     Returns:
         The original chunk with a generated headline
@@ -30,32 +29,26 @@ def rewrite_chunk(original_chunk: str, chapter_name: str) -> str:
         DocumentProcessingError: If chunk rewriting fails
     """
     try:
-        logger.info("Starting chunk rewrite process")
-        logger.debug("Original chunk preview: %s", original_chunk[:100])
-        logger.debug("Chapter name: %s", chapter_name)
-
-        # Input validation
-        if not original_chunk or not chapter_name:
-            raise DocumentProcessingError(
-                "Invalid input for chunk rewriting",
-                details={
-                    "chapter_name": chapter_name,
-                    "chunk_length": len(original_chunk) if original_chunk else 0,
-                },
-            )
-
         # Get the prompt from PromptManager
         try:
+            metadata = doc.metadata
+            headline = (
+                metadata.get("page_header")
+                + " "
+                + metadata.get("section_heading")
+                + " "
+                + metadata.get("subsection_heading")
+            )
             prompt = PromptManager.get_prompt(
-                "chunk_rewrite_prompt",
-                original_chunk=original_chunk,
-                chapter_name=chapter_name,
+                "write_header_prompt",
+                chunk=doc.page_content,
+                headline=headline,
             )
         except Exception as e:
             raise DocumentProcessingError(
                 "Failed to generate chunk rewrite prompt",
                 details={
-                    "chapter_name": chapter_name,
+                    "headline": headline,
                     "error": str(e),
                 },
             )
@@ -71,14 +64,14 @@ def rewrite_chunk(original_chunk: str, chapter_name: str) -> str:
             raise DocumentProcessingError(
                 "LLM processing failed during chunk rewrite",
                 details={
-                    "chapter_name": chapter_name,
+                    "headline": headline,
                     "error": str(e),
                 },
             )
 
         logger.debug("Generated headline: %s", result.headline)
         logger.info("Chunk rewrite completed successfully")
-        return f"{result.headline}---{original_chunk}"
+        return f"{result.headline}---{doc.page_content}"
 
     except DocumentProcessingError:
         raise
@@ -86,7 +79,7 @@ def rewrite_chunk(original_chunk: str, chapter_name: str) -> str:
         raise DocumentProcessingError(
             "Unexpected error during chunk rewriting",
             details={
-                "chapter_name": chapter_name,
+                "headline": headline,
                 "error": str(e),
             },
         )

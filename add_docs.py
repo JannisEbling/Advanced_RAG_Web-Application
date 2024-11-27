@@ -12,16 +12,15 @@ import pandas as pd
 import uuid
 from datetime import datetime
 from timescale_vector.client import uuid_from_time
-from src.components.chunk_rewriter import rewrite_chunk
-from src.azure_response_processor import AzureResponseProcessor
-from src.doc_intel import DocumentIntelligenceClientWrapper
+from src.components.chunk_rewriter import write_header
+from src.components.azure_response_processor import AzureResponseProcessor
+from src.components.doc_intel import DocumentIntelligenceClientWrapper
 from src.components.doc_cleaner import (
     filter_recurrent_obsolescences_with_remove,
     replace_new_line_with_space,
     replace_t_with_space,
 )
-from src.components.vector_store_chroma import VectorStore
-from vector_store import VectorStore as TimescaleVectorStore
+from src.components.vector_store_postgresql import VectorStore
 
 import logging
 
@@ -79,7 +78,7 @@ class DocumentManager:
         self.reset_between_files = reset_between_files
         if config is None:
             self.config = ProcessingConfig()
-        self.vector_store = TimescaleVectorStore()
+        self.vector_store = VectorStore()
         self.vector_store.create_tables()
         self.vector_store.create_index()
         self.documentintelligence = DocumentIntelligenceClientWrapper()
@@ -202,7 +201,7 @@ class DocumentManager:
                         str(uuid_from_time(datetime.now())),
                         figure["image_path"],
                         figure["caption"],
-                        figure_ref_no_ext  # Reference without extension
+                        figure_ref_no_ext,  # Reference without extension
                     )
                     figure_records.append(record)
 
@@ -239,7 +238,7 @@ class DocumentManager:
             for doc in documents:
                 try:
                     doc.page_content = _clean_chunk_text(doc.page_content)
-                    # processed_doc = rewrite_chunk(doc)
+                    doc.page_content = write_header(doc)
                     processed_documents.append(doc)
 
                     # Add to vector store when batch size is reached

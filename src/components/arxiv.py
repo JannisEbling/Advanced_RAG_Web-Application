@@ -25,13 +25,12 @@ def arxiv_search(state) -> List[Document]:
         logger.info("Starting arxiv search")
         arxiv = ArxivQueryRun(api_wrapper=ArxivAPIWrapper())
         docs = arxiv.run(state.query)
+        state.documents = docs
+        state.datasource = "arxiv"
         logger.info(f"Found {len(docs)} documents from arxiv")
-        return docs
+        return state
     except Exception as e:
         raise DocumentProcessingError(
             "Failed to perform arxiv search",
-            details={
-                "query": state.query,
-                "error": str(e)
-            }
+            details={"query": state.query, "error": str(e)},
         )

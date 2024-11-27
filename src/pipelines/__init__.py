@@ -1,12 +1,11 @@
 """
-RAG pipeline implementations for document processing and query answering.
+RAG pipeline components for document processing and querying.
 """
 
-from .add_docs import process_documents, process_document
+from .add_docs import DocumentManager
 from .get_answer import invoke
 
 __all__ = [
-    "process_documents",
-    "process_document",
+    "DocumentManager",
     "invoke",
 ]

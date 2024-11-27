@@ -18,7 +18,8 @@ from src.components.generate_response import ResponseGenerator
 from src.components.query_rewriter import rewrite_query
 from src.components.reranker import rerank_documents
 from src.components.route import route_question, DataSource
-from vector_store import VectorStore as TimescaleVectorStore
+from src.components.vector_store_postgresql import VectorStore
+from src.components.fallback import generate_fallback
 
 
 class WorkflowState(BaseModel):
@@ -56,13 +57,17 @@ class WorkflowState(BaseModel):
     response_confidence: Optional[float] = Field(
         None, description="Confidence in response quality"
     )
-    
+
     figures: List[Dict[str, Any]] = Field(
         default_factory=list, description="Retrieved figures"
     )
-    
+
     formulas: List[Dict[str, Any]] = Field(
         default_factory=list, description="Retrieved formulas"
+    )
+
+    referenced_figure_paths: List[str] = Field(
+        default_factory=list, description="Paths to figures referenced in the response"
     )
 
 
@@ -95,7 +100,12 @@ def invoke(user_input: str) -> dict:
         response_logger.info(
             "Response: %s", output.get("response", "No response generated")
         )
-        return output
+        return {
+            "response": output.get("response", "No response generated"),
+            "referenced_figure_paths": output.get("referenced_figure_paths", []),
+            # "response_confidence": output.get("response_confidence", 0.0),
+            "reranked_documents": output.get("reranked_documents", []),
+        }
     except Exception as e:
         error_msg = f"RAG pipeline failed for query: {user_input}"
         logger.error(error_msg, exc_info=True)
@@ -121,17 +131,18 @@ def _create_workflow() -> StateGraph:
     Returns:
         Configured workflow graph
     """
+    # TODO: Look into state update strategies
     workflow = StateGraph(WorkflowState)
 
     # Core processing nodes
     workflow.add_node("route", route_question)
     workflow.add_node("rewrite_query", rewrite_query)
     workflow.add_node("arxiv_search", arxiv_search)
-    workflow.add_node("vectorstore_search", TimescaleVectorStore().retrieve)
+    workflow.add_node("vectorstore_search", VectorStore().retrieve)
     workflow.add_node("rerank", rerank_documents)
     workflow.add_node("generate", ResponseGenerator().generate_response)
     workflow.add_node("detect_hallucination", is_answer_grounded_on_context)
-    # workflow.add_node("generate_fallback", ResponseGenerator().generate_response)
+    workflow.add_node("generate_fallback", generate_fallback)
 
     # Define workflow edges
     workflow.add_edge(START, "route")
@@ -147,25 +158,28 @@ def _create_workflow() -> StateGraph:
         },
     )
 
-    # Common processing path
-    for source in ["arxiv_search", "vectorstore_search"]:
-        workflow.add_edge(source, "rerank")
-
+    workflow.add_edge("vectorstore_search", "rerank")
     workflow.add_edge("rerank", "generate")
+    workflow.add_edge("arxiv_search", "generate")
     workflow.add_edge("generate", "detect_hallucination")
 
     # Handle hallucinations with proper branching
     workflow.add_conditional_edges(
         "detect_hallucination",
-        lambda x: x.is_hallucination,
+        lambda x: "arxiv"
+        if x.datasource.value == "vectorstore" and x.is_hallucination
+        else "generate_fallback"
+        if x.datasource.value != "vectorstore"
+        else END,
         {
-            True: END,
-            False: END,
+            "arxiv": "arxiv_search",
+            "generate_fallback": "generate_fallback",
+            END: END,
         },
     )
 
     # Add final edge from fallback to end
-    # workflow.add_edge("generate_fallback", END)
+    workflow.add_edge("generate_fallback", END)
 
     return workflow
 
@@ -173,7 +187,7 @@ def _create_workflow() -> StateGraph:
 if __name__ == "__main__":
     # Example usage with error handling
     try:
-        question = "What is backpropagation?"
+        question = "Tell me something about basis functions?"
         result = invoke(question)
         print(f"Response: {result.get('response', 'No response generated')}")
         print(f"Confidence: {result.get('response_confidence', 0):.2f}")
