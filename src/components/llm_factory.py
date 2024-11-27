@@ -1,46 +1,59 @@
 from typing import Any, Dict, List, Type, Optional
 
 import instructor
-from src.anthropic import Anthropic
+from openai import OpenAI, AzureOpenAI
 from src.config.settings import get_settings
-from src.openai import OpenAI, AzureOpenAI
 from pydantic import BaseModel, Field
-from src.secure.secrets import secrets
 
 
 class LLMFactory:
     def __init__(self, provider: str):
+        """Initialize LLM factory with specified provider.
+
+        Args:
+            provider: The LLM provider to use ('azure', 'openai', etc.)
+        """
         self.provider = provider
         self.settings = getattr(get_settings(), provider)
         self.client = self._initialize_client()
 
     def _initialize_client(self) -> Any:
+        """Initialize the appropriate LLM client based on provider."""
         client_initializers = {
-            "openai": lambda s: instructor.from_openai(OpenAI(api_key=s.api_key)),
-            "azure": lambda s: instructor.from_openai(
+            "openai": lambda s: instructor.patch(OpenAI(api_key=s.api_key)),
+            "azure": lambda s: instructor.patch(
                 AzureOpenAI(
-                    api_key=secrets.get_secret("AZURE_OPENAI_API_KEY"),
+                    api_key=s.api_key,
                     api_version=s.api_version,
-                    azure_endpoint=secrets.get_secret("AZURE_OPENAI_ENDPOINT"),
+                    azure_endpoint=s.api_endpoint,
+                    azure_deployment=s.deployment_id,
                 )
             ),
-            "anthropic": lambda s: instructor.from_anthropic(
-                Anthropic(api_key=s.api_key)
-            ),
-            "llama": lambda s: instructor.from_openai(
+            "llama": lambda s: instructor.patch(
                 OpenAI(base_url=s.base_url, api_key=s.api_key),
                 mode=instructor.Mode.JSON,
             ),
         }
 
         initializer = client_initializers.get(self.provider)
-        if initializer:
-            return initializer(self.settings)
-        raise ValueError(f"Unsupported LLM provider: {self.provider}")
+        if not initializer:
+            raise ValueError(f"Unsupported LLM provider: {self.provider}")
+
+        return initializer(self.settings)
 
     def create_completion(
         self, response_model: Type[BaseModel], messages: List[Dict[str, str]], **kwargs
     ) -> Any:
+        """Create a completion using the initialized LLM client.
+
+        Args:
+            response_model: Pydantic model for response validation
+            messages: List of message dictionaries
+            **kwargs: Additional parameters to override defaults
+
+        Returns:
+            Validated response using the provided response_model
+        """
         completion_params = {
             "model": kwargs.get("model", self.settings.default_model),
             "temperature": kwargs.get("temperature", self.settings.temperature),
@@ -50,9 +63,10 @@ class LLMFactory:
             "messages": messages,
         }
 
-        # For Azure OpenAI, we need to use deployment_id instead of model
-        if self.provider == "azure":
-            completion_params["deployment_id"] = completion_params.pop("model")
+        # Remove None values
+        completion_params = {
+            k: v for k, v in completion_params.items() if v is not None
+        }
 
         return self.client.chat.completions.create(**completion_params)
 

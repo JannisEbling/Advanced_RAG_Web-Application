@@ -21,7 +21,8 @@ Analysis:
 - Query seeks symptom information
 - Document directly lists symptoms and timing
 - Highly relevant, comprehensive answer
-Result: {"relevance_score": 0.95, "confidence_score": 0.9}
+Result: {"decision_reason":"Query seeks symptom information. Document directly lists symptoms and timing, Highly relevant, comprehensive answer",
+"relevance_score": 0.95}
 
 Example 2:
 Query: "How do I bake chocolate chip cookies?"
@@ -30,8 +31,9 @@ Analysis:
 - Query seeks baking instructions
 - Document discusses chocolate history
 - Not relevant to baking process
-Result: {"relevance_score": 0.1, "confidence_score": 0.95}
+Result: {"decision_reason":"Query seeks baking instructions. Document discusses chocolate history. Not relevant to baking process",
+"relevance_score": 0.1}
 
 Provide a JSON response with:
+- explaination: detailed explanation of why this document is relevant or not
 - relevance_score: 0-1 score (1 = perfectly relevant)
-- confidence_score: 0-1 score (1 = completely certain)

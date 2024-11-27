@@ -4,7 +4,8 @@ from langchain.schema import Document
 from langchain_community.tools import ArxivQueryRun
 from langchain_community.utilities import ArxivAPIWrapper
 
-from src import logger, DocumentProcessingError
+from src.log_utils import logger
+from src.exception.exception import DocumentProcessingError
 
 
 def arxiv_search(state) -> List[Document]:

@@ -1,51 +1,45 @@
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Any, Tuple
 from pydantic import BaseModel, Field, confloat
-from langchain.schema import Document
-from langchain_openai import AzureOpenAI
 
-from src import logger, RetrievalError
-from src.secure.secrets import secrets
-from src.prompts.prompt_manager import PromptManager
+from langchain.docstore.document import Document
+from src.log_utils import logger
+from src.exception.exception import RetrievalError
 from src.components.llm_factory import LLMFactory
+from src.prompts.prompt_manager import PromptManager
 
 
 class RerankingResponse(BaseModel):
-    """Response model for document reranking with confidence scoring."""
+    """Model for reranking response."""
 
-    decision_reason: str = Field(
-        description="Detailed explanation of why this document is relevant or not to the query, including specific matches and evidence"
-    )
+    decision_reason: str = Field(description="Explanation of document relevance")
     relevance_score: confloat(ge=0.0, le=1.0) = Field(
-        description="Relevance score between 0 and 1 indicating how relevant the document is to the query"
+        description="Relevance score for the document"
     )
 
 
-def rerank_documents(state: Dict[str, Any], top_n: int = 3) -> Dict[str, List[Document]]:
+def rerank_documents(state: Any, top_n: int = 3) -> Dict[str, List[Document]]:
     """
-    Reranks documents based on relevance to a query using a LLM with structured output.
+    Rerank documents based on their relevance to the query.
 
     Args:
-        state: Current graph state, containing the 'question' and 'documents'
-        top_n: Number of top documents to return based on relevance
+        state: The current workflow state containing question and documents
+        top_n: Number of top documents to return after reranking (default: 3)
 
     Returns:
-        Updated state with the 'reranked_documents' key, containing the top_n reranked documents
+        Updated state with reranked documents
 
     Raises:
         RetrievalError: If document reranking fails
     """
     try:
-        if "question" not in state or "documents" not in state:
+        if not hasattr(state, "question") or not hasattr(state, "documents"):
             raise RetrievalError(
-                "Missing required state components for reranking",
-                details={
-                    "available_keys": list(state.keys()),
-                    "required_keys": ["question", "documents"],
-                },
+                "Missing question in state for routing",
+                details={"available_attributes": dir(state)},
             )
 
-        query = state["question"]
-        docs = state["documents"]
+        query = state.question
+        docs = state.documents
 
         if not docs:
             raise RetrievalError(
@@ -53,24 +47,22 @@ def rerank_documents(state: Dict[str, Any], top_n: int = 3) -> Dict[str, List[Do
                 details={"query": query},
             )
 
-        logger.info("Reranking documents for query: %s", query)
+        logger.info("Starting document reranking for %d documents", len(docs))
 
-        try:
-            llm = LLMFactory(provider="azure")
-        except Exception as e:
-            raise RetrievalError(
-                "Failed to initialize LLM for reranking",
-                details={"error": str(e)},
-            )
+        # Initialize LLM for reranking
+        llm = LLMFactory(provider="azure")
 
-        scored_docs: List[Tuple[Document, float, Dict[str, Any]]] = []
+        # Store documents with their scores and explanations
+        scored_docs: List[Tuple[Document, float, str]] = []
+
+        # Process each document
         for doc in docs:
             try:
                 # Get prompt from PromptManager for each document
                 prompt = PromptManager.get_prompt(
                     "reranking_prompt",
                     query=query,
-                    doc=doc.page_content,
+                    document=doc.page_content,
                 )
 
                 # Get structured reranking response using LLM
@@ -79,65 +71,58 @@ def rerank_documents(state: Dict[str, Any], top_n: int = 3) -> Dict[str, List[Do
                     messages=[{"role": "user", "content": prompt}],
                 )
 
-                # Only consider documents with high confidence scores
-                if result.confidence_score >= 0.7:
-                    scored_docs.append(
-                        (
-                            doc,
-                            result.relevance_score,
-                            {
-                                "decision_reason": result.decision_reason,
-                                "relevance_score": result.relevance_score,
-                            },
-                        )
-                    )
-                    logger.debug(
-                        "Document scored - Relevance: %.2f, Confidence: %.2f",
-                        result.relevance_score,
-                        result.confidence_score,
-                    )
-                else:
-                    logger.debug(
-                        "Document skipped due to low confidence: %.2f",
-                        result.confidence_score,
-                    )
+                # Store document with its scores
+                scored_docs.append(
+                    (doc, result.relevance_score, result.decision_reason)
+                )
+
+                logger.debug(
+                    "Document scored - Relevance: %.2f, Reason: %s",
+                    result.relevance_score,
+                    result.decision_reason[:100],
+                )
 
             except Exception as e:
-                logger.warning("Failed to process document: %s", str(e))
+                logger.warning("Failed to score document, skipping. Error: %s", str(e))
                 continue
 
         if not scored_docs:
             raise RetrievalError(
-                "No documents met the confidence threshold for reranking",
+                "Failed to score any documents",
                 details={
                     "query": query,
-                    "total_docs": len(docs),
+                    "num_input_docs": len(docs),
                 },
             )
 
-        # Sort documents by relevance score in descending order and take top_n
-        reranked_docs = sorted(scored_docs, key=lambda x: x[1], reverse=True)[:top_n]
+        # Sort documents by relevance score and take top_n
+        reranked_docs = sorted(
+            scored_docs,
+            key=lambda x: x[1],
+            reverse=True,
+        )[:top_n]
 
-        # Store reranking metadata in state
-        state["reranking_metadata"] = {
-            idx: metadata for idx, (_, _, metadata) in enumerate(reranked_docs)
-        }
-
-        # Extract just the documents for the final result
-        final_docs = [doc for doc, _, _ in reranked_docs]
+        # Add reranking explanations to document metadata
+        final_docs = []
+        for doc, score, reason in reranked_docs:
+            doc.metadata["relevance_score"] = score
+            doc.metadata["reranking_reason"] = reason
+            final_docs.append(doc)
 
         logger.info("Successfully reranked documents")
-        logger.debug("Top %d documents selected", len(final_docs))
+        logger.debug(
+            "Top %d documents selected from %d total", len(final_docs), len(scored_docs)
+        )
 
-        return {"reranked_documents": final_docs}
+        state.reranked_documents = final_docs
+        return state
 
     except RetrievalError:
         raise
     except Exception as e:
         raise RetrievalError(
-            "Unexpected error during document reranking",
+            "Failed to rerank documents",
             details={
-                "query": state.get("question", ""),
                 "error": str(e),
             },
         )

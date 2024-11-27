@@ -1,0 +1,42 @@
+[
+  {
+    "page_content": "The goal of regression is to predict the value of one or more continuous target vari- ables t given the value of a D-dimensional vector x of input variables. Typically we are given a training data set comprising N observations {n}, where n = 1, ... , N, together with corresponding target values {tn }, and the goal is to predict the value of t for a new value of x. To do this, we formulate a function y(x, w) whose values for new inputs x constitute the predictions for the corresponding values of t, and where w represents a vector of parameters that can be learned from the training data.\nThe simplest model for regression is one that involves a linear combination of the input variables:",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "4.1.1 Basis functions",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "page_number": 112,
+      "figure_references": [],
+      "formula_references": []
+    }
+  },
+  {
+    "page_content": "The simplest model for regression is one that involves a linear combination of the input variables:\nwhere x = (x1, ... , XD)T. The term linear regression sometimes refers specifically to this form of model. The key property of this model is that it is a linear function of the parameters wo, ... , wp. It is also, however, a linear function of the input variables xį, and this imposes significant limitations on the model.\nWe can extend the class of models defined by (4.1) by considering linear com- binations of fixed nonlinear functions of the input variables, of the form\nwhere øj(x) are known as basis functions. By denoting the maximum value of the index j by M - 1, the total number of parameters in this model will be M.",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "4.1.1 Basis functions",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "page_number": 112,
+      "figure_references": [],
+      "formula_references": [
+        "(4.1)"
+      ]
+    }
+  },
+  {
+    "page_content": "where øj(x) are known as basis functions. By denoting the maximum value of the index j by M - 1, the total number of parameters in this model will be M.\nThe parameter w0 allows for any fixed offset in the data and is sometimes called a bias parameter (not to be confused with bias in a statistical sense). It is often convenient to define an additional dummy basis function ¢0(x) whose value is fixed at ¢0(x) = 1 so that (4.2) becomes\nwhere w = (wo, ... , WM-1)T and $ = (do, ... , PM-1)T. We can represent the model (4.3) using a neural network diagram, as shown in Figure 4.1.\nBy using nonlinear basis functions, we allow the function y(x, w) to be a non- linear function of the input vector x. Functions of the form (4.2) are called linear models, however, because they are linear in w. It is this linearity in the parameters that will greatly simplify the analysis of this class of models. However, it also leads to some significant limitations.",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "4.1.1 Basis functions",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "page_number": 112,
+      "figure_references": [
+        "Figure 4.1"
+      ],
+      "formula_references": [
+        "(4.2)",
+        "(4.3)"
+      ]
+    }
+  }
+]

@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field, confloat
 
 from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
-from src import logger, DocumentProcessingError
+from src.log_utils import logger
+from src.exception.exception import DocumentProcessingError
 
 
 class ChunkRewriteResponse(BaseModel):
@@ -12,25 +13,18 @@ class ChunkRewriteResponse(BaseModel):
     headline: str = Field(
         description="Generated headline that captures the main topic of the chunk"
     )
-    rewritten_chunk: str = Field(
-        description="The rewritten and optimized chunk of text"
-    )
-    confidence_score: confloat(ge=0.0, le=1.0) = Field(
-        description="Confidence score between 0 and 1 indicating how certain the model is about the rewrite quality"
-    )
 
 
 def rewrite_chunk(original_chunk: str, chapter_name: str) -> str:
     """
-    Rewrites the chunk with a LLM to retrieve better results with similarity search and add a headline.
-    Uses confidence scoring to ensure quality of rewrite.
+    Rewrites the chunk by generating a headline that captures its main topic.
 
     Args:
         original_chunk: The original chunk of text
         chapter_name: The chapter name
 
     Returns:
-        The rewritten chunk with headline for optimized retrieval
+        The original chunk with a generated headline
 
     Raises:
         DocumentProcessingError: If chunk rewriting fails
@@ -83,22 +77,8 @@ def rewrite_chunk(original_chunk: str, chapter_name: str) -> str:
             )
 
         logger.debug("Generated headline: %s", result.headline)
-        logger.debug("Confidence score: %.2f", result.confidence_score)
-        logger.debug("Rewritten chunk preview: %s", result.rewritten_chunk[:100])
-
-        # Only use rewrites with high confidence
-        if result.confidence_score < 0.7:
-            logger.warning(
-                "Low confidence in rewrite (%.2f), using original chunk with generated headline",
-                result.confidence_score,
-            )
-            return f"{result.headline}---{original_chunk}"
-
-        logger.info(
-            "Chunk rewrite completed successfully with confidence %.2f",
-            result.confidence_score,
-        )
-        return f"{result.headline}---{result.rewritten_chunk}"
+        logger.info("Chunk rewrite completed successfully")
+        return f"{result.headline}---{original_chunk}"
 
     except DocumentProcessingError:
         raise

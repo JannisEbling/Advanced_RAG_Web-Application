@@ -1,12 +1,17 @@
 from typing import Any, List
+import os
+from dotenv import load_dotenv
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import AzureOpenAIEmbeddings
 
-from config.settings import get_settings
+from src.config.settings import get_settings
 from src.exception.exception import DocumentProcessingError
-from src.logging import logger
-from src.secure.secrets import secrets
+from src.log_utils import logger
+
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class EmbeddingFactory:
@@ -22,7 +27,8 @@ class EmbeddingFactory:
         """
         self.provider = provider
         try:
-            self.settings = getattr(get_settings(), provider)
+            settings = get_settings()
+            self.settings = getattr(settings, f"{provider}_embedding")
         except AttributeError:
             raise DocumentProcessingError(
                 f"Invalid embedding provider configuration",
@@ -46,7 +52,10 @@ class EmbeddingFactory:
         if not initializer:
             raise DocumentProcessingError(
                 "Unsupported embedding provider",
-                details={"provider": self.provider, "supported_providers": list(model_initializers.keys())},
+                details={
+                    "provider": self.provider,
+                    "supported_providers": list(model_initializers.keys()),
+                },
             )
 
         try:
@@ -69,15 +78,19 @@ class EmbeddingFactory:
         Raises:
             DocumentProcessingError: If Azure credentials are missing or invalid
         """
-        api_key = secrets.get_secret("AZURE_OPENAI_API_KEY")
-        api_endpoint = secrets.get_secret("AZURE_OPENAI_ENDPOINT")
+        api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        api_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
 
         if not api_key or not api_endpoint:
             raise DocumentProcessingError(
                 "Azure OpenAI credentials not found",
                 details={
                     "missing_credentials": [
-                        k for k, v in {"api_key": api_key, "api_endpoint": api_endpoint}.items() 
+                        k
+                        for k, v in {
+                            "api_key": api_key,
+                            "api_endpoint": api_endpoint,
+                        }.items()
                         if not v
                     ],
                 },
@@ -85,17 +98,17 @@ class EmbeddingFactory:
 
         try:
             return AzureOpenAIEmbeddings(
-                azure_deployment=self.settings.deployment_name,
+                azure_deployment=self.settings.deployment_id,
                 azure_endpoint=api_endpoint,
                 api_key=api_key,
                 api_version=self.settings.api_version,
-                dimensions=self.settings.dimensions,
+                model=self.settings.default_model,
             )
         except Exception as e:
             raise DocumentProcessingError(
                 "Failed to initialize Azure OpenAI embeddings",
                 details={
-                    "deployment": self.settings.deployment_name,
+                    "deployment": self.settings.deployment_id,
                     "error": str(e),
                 },
             )

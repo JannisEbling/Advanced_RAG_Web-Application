@@ -2,7 +2,8 @@ from typing import Dict, Any
 from enum import Enum
 from pydantic import BaseModel, Field, confloat
 
-from src import logger, RoutingError
+from src.log_utils import logger
+from src.exception.exception import RoutingError
 from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
 
@@ -28,12 +29,12 @@ class RouteResponse(BaseModel):
     )
 
 
-def route_question(state: Dict[str, Any]) -> str:
+def route_question(state: Any) -> str:
     """
     Route question to arXiv search or vectorstore search based on content analysis.
 
     Args:
-        state: The current graph state containing the question
+        state: The current workflow state containing the question
 
     Returns:
         Next node to call based on routing decision
@@ -43,13 +44,13 @@ def route_question(state: Dict[str, Any]) -> str:
     """
     try:
         # Validate state
-        if "question" not in state:
+        if not hasattr(state, "question"):
             raise RoutingError(
                 "Missing question in state for routing",
-                details={"available_keys": list(state.keys())},
+                details={"available_attributes": dir(state)},
             )
 
-        question = state["question"]
+        question = state.question
         if not question.strip():
             raise RoutingError(
                 "Empty question provided for routing",
@@ -61,7 +62,7 @@ def route_question(state: Dict[str, Any]) -> str:
 
         try:
             # Get the prompt from PromptManager
-            prompt = PromptManager.get_prompt("routing_prompt", question=question)
+            prompt = PromptManager().get_prompt("routing_prompt", question=question)
         except Exception as e:
             raise RoutingError(
                 "Failed to generate routing prompt",
@@ -92,19 +93,8 @@ def route_question(state: Dict[str, Any]) -> str:
         logger.debug("Confidence score: %.2f", result.confidence_score)
 
         # Store the routing decision in state for potential use downstream
-        state["routing"] = {
-            "decision_reason": result.decision_reason,
-            "datasource": result.datasource,
-            "confidence_score": result.confidence_score,
-        }
-
-        # Handle low confidence cases
-        if result.confidence_score < 0.7:
-            logger.warning(
-                "Low confidence in routing decision (%.2f), defaulting to vectorstore",
-                result.confidence_score,
-            )
-            return "rewrite_query_vectorstore"
+        state.datasource = result.datasource
+        state.routing_confidence = result.confidence_score
 
         # Route based on decision
         if result.datasource == DataSource.ARXIV:
@@ -112,13 +102,12 @@ def route_question(state: Dict[str, Any]) -> str:
                 "Routing to arXiv search with confidence %.2f",
                 result.confidence_score,
             )
-            return "rewrite_query_arxiv"
         else:
             logger.info(
                 "Routing to vectorstore search with confidence %.2f",
                 result.confidence_score,
             )
-            return "rewrite_query_vectorstore"
+        return state
 
     except RoutingError:
         raise
@@ -126,7 +115,7 @@ def route_question(state: Dict[str, Any]) -> str:
         raise RoutingError(
             "Unexpected error during question routing",
             details={
-                "question": state.get("question", ""),
+                "question": getattr(state, "question", ""),
                 "error": str(e),
             },
         )

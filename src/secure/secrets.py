@@ -7,7 +7,7 @@ from typing import Optional
 import keyring
 from dotenv import load_dotenv
 
-from src import logger, RAGPipelineError
+from src.log_utils import logger
 
 
 class SecretsManager:

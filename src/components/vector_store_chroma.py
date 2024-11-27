@@ -9,7 +9,7 @@ from langchain.retrievers import EnsembleRetriever
 from src import config as app_config
 from src.components.embedding_factory import EmbeddingFactory
 from src.exception.exception import RetrievalError
-from src.logging import logger
+from src.log_utils import logger
 
 
 class VectorStore:
@@ -92,8 +92,7 @@ class VectorStore:
         try:
             logger.info("Creating similarity retriever with k=%d", k)
             return self.vectorstore.as_retriever(
-                search_type="similarity",
-                search_kwargs={"k": k}
+                search_type="similarity", search_kwargs={"k": k}
             )
         except Exception as e:
             raise RetrievalError(
@@ -128,9 +127,7 @@ class VectorStore:
         try:
             logger.info("Creating BM25 retriever with k=%d", k)
             return BM25Retriever.from_documents(
-                docs,
-                preprocess_func=lambda x: x.page_content,
-                k=k
+                docs, preprocess_func=lambda x: x.page_content, k=k
             )
         except Exception as e:
             raise RetrievalError(
@@ -143,10 +140,10 @@ class VectorStore:
             )
 
     def get_ensemble_retriever(
-        self, 
+        self,
         docs: Optional[List[Any]] = None,
         k: int = 10,
-        weights: Optional[List[float]] = None
+        weights: Optional[List[float]] = None,
     ) -> EnsembleRetriever:
         """
         Create an ensemble retriever combining similarity and BM25.
@@ -175,27 +172,26 @@ class VectorStore:
             retrievers = [
                 self.get_similarity_retriever(k=k),
             ]
-            
+
             if docs:
                 retrievers.append(self.get_bm25_retriever(docs=docs, k=k))
-            
+
             weights = weights or [0.5] * len(retrievers)
-            
+
             logger.info(
                 "Creating ensemble retriever with %d retrievers and weights %s",
                 len(retrievers),
-                weights
+                weights,
             )
-            
-            return EnsembleRetriever(
-                retrievers=retrievers,
-                weights=weights
-            )
+
+            return EnsembleRetriever(retrievers=retrievers, weights=weights)
         except Exception as e:
             raise RetrievalError(
                 "Failed to create ensemble retriever",
                 details={
-                    "num_retrievers": len(retrievers) if 'retrievers' in locals() else 0,
+                    "num_retrievers": len(retrievers)
+                    if "retrievers" in locals()
+                    else 0,
                     "weights": weights,
                     "k": k,
                     "error": str(e),

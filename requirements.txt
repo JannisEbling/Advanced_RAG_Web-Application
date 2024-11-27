@@ -18,5 +18,14 @@ setuptools==68.0.0
 streamlit==1.38.0
 torch==2.3.1
 transformers==4.40.2
+timescale-vector
 typing_extensions==4.12.2
 rank_bm25
+azure-ai-formrecognizer
+azure-ai-formrecognizer>=3.2.0
+matplotlib>=3.5.0
+Pillow>=9.0.0
+PyMuPDF>=1.19.0
+python-frontmatter
+langfuse
+timescale_vector

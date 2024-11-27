@@ -72,7 +72,7 @@ This RAG application was developed to be used with the Book *"Deep Learning - Fo
 
 - Python 3.8+
 - API key for your chosen LLM provider (Azure OpenAI recommended)
-- HuggingFace API key for embeddings
+- API key for your chosen Embedding provider (Azure OpenAI recommended)
 
 
 ### Installation (without Docker)

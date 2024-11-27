@@ -1,25 +1,39 @@
 import os
 import sys
+import json
 from pathlib import Path
 from typing import List, Optional
+from tqdm import tqdm
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.components.chunk_rewriter import rewrite_chunk
+from src.azure_response_processor import AzureResponseProcessor
+from src.doc_intel import DocumentIntelligenceClientWrapper
 from src.components.doc_cleaner import (
     filter_recurrent_obsolescences_with_remove,
     replace_new_line_with_space,
     replace_t_with_space,
-    split_into_chapters,
 )
-from src.components.vector_store import VectorStore
-from src.logging import logger
-from src.exceptions import DocumentProcessingError
+from src.components.vector_store_chroma import VectorStore
+from vector_store import VectorStore as TimescaleVectorStore
 
-# Load environment variables
-load_dotenv()
+import logging
+
+logger = logging.getLogger(__name__)
+
+SUPPORTED_EXTENSIONS = [".pdf"]
+BATCH_SIZE = 100  # Number of documents to process in one batch for vector store
+
+
+class DocumentProcessingError(Exception):
+    """Custom exception for document processing errors with detailed information."""
+
+    def __init__(self, message: str, details: dict = None):
+        self.message = message
+        self.details = details or {}
+        super().__init__(self.message)
 
 
 class DocumentMetadata(BaseModel):
@@ -38,135 +52,156 @@ class DocumentMetadata(BaseModel):
 class ProcessingConfig(BaseModel):
     """Configuration for document processing."""
 
-    chunk_size: int = Field(default=2000, description="Target size for text chunks")
+    chunk_size: int = Field(default=1000, description="Size of text chunks")
     chunk_overlap: int = Field(default=200, description="Overlap between chunks")
     min_chunk_size: int = Field(
-        default=100, description="Minimum chunk size to process"
+        default=100, description="Minimum size for a chunk to be processed"
     )
     skip_chapters: List[str] = Field(
         default_factory=list, description="Chapter titles to skip"
     )
+    batch_size: int = Field(
+        default=BATCH_SIZE, description="Number of documents to process in one batch"
+    )
+
+
+def process_documents(
+    doc_folder_path: str,
+    provider: str = "azure",
+    config: Optional[ProcessingConfig] = None,
+) -> None:
+    """
+    Process multiple documents from a folder.
+
+    Args:
+        doc_folder_path: Path to the folder containing documents
+        provider: Vector store provider
+        config: Processing configuration
+    """
+    doc_folder = Path(doc_folder_path)
+    if not doc_folder.exists():
+        raise DocumentProcessingError(
+            "Folder not found", details={"path": str(doc_folder)}
+        )
+
+    # Get all PDF files
+    doc_paths = []
+    for ext in SUPPORTED_EXTENSIONS:
+        doc_paths.extend(doc_folder.glob(f"*{ext}"))
+
+    if not doc_paths:
+        raise DocumentProcessingError(
+            f"No supported documents found in folder. Supported types: {', '.join(SUPPORTED_EXTENSIONS)}",
+            details={"path": str(doc_folder)},
+        )
+
+    logger.info(f"Found {len(doc_paths)} documents to process")
+
+    # Process documents with progress bar
+    for doc_path in tqdm(doc_paths, desc="Processing documents"):
+        try:
+            process_document(str(doc_path), provider=provider, config=config)
+        except DocumentProcessingError as e:
+            logger.error(f"Failed to process {doc_path.name}: {e.message}")
+            logger.debug("Error details:", exc_info=True)
+            continue
 
 
 def process_document(
-    doc_path: str, provider: str = "azure", config: Optional[ProcessingConfig] = None
+    doc_path: Path,
+    provider: str = "azure",
+    config: Optional[ProcessingConfig] = None,
 ) -> None:
     """
     Process and add a document to the vectorstore with improved error handling and logging.
 
     Args:
         doc_path: Path to the document
-        provider: The embedding provider to use (e.g., "azure", "huggingface")
-        config: Optional processing configuration
-
-    Raises:
-        DocumentProcessingError: If document processing fails
+        provider: Vector store provider
+        config: Processing configuration
     """
     if config is None:
         config = ProcessingConfig()
 
+    doc_path = Path(doc_path)
     try:
         logger.info(f"Starting document processing for: {doc_path}")
-        if not Path(doc_path).exists():
+
+        # Validate document type
+        if doc_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
             raise DocumentProcessingError(
-                "Document not found", details={"path": doc_path}
+                f"Unsupported document type: {doc_path.suffix}",
+                details={"supported_types": SUPPORTED_EXTENSIONS},
             )
 
-        vector_store = VectorStore(provider=provider)
+        if not doc_path.exists():
+            raise DocumentProcessingError(
+                "Document not found", details={"path": str(doc_path)}
+            )
 
-        # Split document into chapters
+        vector_store = TimescaleVectorStore()
+        vector_store.create_tables()
+        vector_store.create_index()
+        processed_documents = []
+
         try:
-            documents = split_into_chapters(doc_path)
-            logger.info(f"Split document into {len(documents)} chapters")
+            # Check Azure credentials before initializing
+            endpoint = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
+            key = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
+            if not endpoint or not key:
+                raise DocumentProcessingError(
+                    "Azure Document Intelligence credentials missing",
+                    details={
+                        "message": "Please set AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT and AZURE_DOCUMENT_INTELLIGENCE_KEY environment variables."
+                    },
+                )
+
+            documentintelligence = DocumentIntelligenceClientWrapper()
+            paragraphs_data = documentintelligence.analyze_documents(str(doc_path))
         except Exception as e:
             raise DocumentProcessingError(
-                "Failed to split document into chapters",
-                details={"path": doc_path, "error": str(e)},
+                "Failed to analyse with document intelligence",
+                details={"path": str(doc_path), "error": str(e)},
             )
 
-        # Create text splitter with configuration
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=config.chunk_size,
-            chunk_overlap=config.chunk_overlap,
-            add_start_index=True,
-        )
+        try:
+            processor = AzureResponseProcessor()
+            processor.set_response(paragraphs_data)
+            documents, formulas, figures = processor.process_paragraphs()
+        except Exception as e:
+            raise DocumentProcessingError(
+                "Failed to process Azure response",
+                details={"path": str(doc_path), "error": str(e)},
+            )
 
-        processed_documents = []
-        processing_errors = []
-
-        # Process each chapter (skip first if it's table of contents)
-        for doc_index, doc in enumerate(documents[1:], 1):
-            chapter_title = doc.metadata.get("chapter", f"Chapter_{doc_index}")
-
-            # Skip specified chapters
-            if chapter_title in config.skip_chapters:
-                logger.info(f"Skipping chapter: {chapter_title}")
-                continue
-
+        # Process documents in batches
+        for doc in documents:
             try:
-                # Split chapter into chunks
-                chunks = text_splitter.split_text(doc.page_content)
-                logger.debug(
-                    f"Split chapter '{chapter_title}' into {len(chunks)} chunks"
-                )
+                doc.content = _clean_chunk_text(doc.content)
+                # processed_doc = rewrite_chunk(doc)
+                processed_documents.append(doc)
 
-                # Process each chunk
-                for chunk_index, chunk in enumerate(chunks):
-                    try:
-                        # Clean chunk text
-                        cleaned_chunk = _clean_chunk_text(chunk)
-                        if len(cleaned_chunk) < config.min_chunk_size:
-                            logger.debug(f"Skipping small chunk in {chapter_title}")
-                            continue
-
-                        # Rewrite and process chunk
-                        processed_chunk = rewrite_chunk(cleaned_chunk, chapter_title)
-
-                        # Create document with metadata
-                        metadata = DocumentMetadata(
-                            chapter=chapter_title,
-                            original_chunk=cleaned_chunk,
-                            source=doc_path,
-                            embedding_provider=provider,
-                            chunk_index=chunk_index,
-                        )
-
-                        processed_doc = Document(
-                            page_content=processed_chunk, metadata=metadata.dict()
-                        )
-                        processed_documents.append(processed_doc)
-
-                    except Exception as e:
-                        error_msg = (
-                            f"Failed to process chunk {chunk_index} in {chapter_title}"
-                        )
-                        logger.warning(error_msg, exc_info=True)
-                        processing_errors.append(
-                            {
-                                "chapter": chapter_title,
-                                "chunk_index": chunk_index,
-                                "error": str(e),
-                            }
-                        )
+                # Add to vector store when batch size is reached
+                if len(processed_documents) >= config.batch_size:
+                    vector_store.upsert(processed_documents)
+                    processed_documents = []
 
             except Exception as e:
-                error_msg = f"Failed to process chapter: {chapter_title}"
-                logger.error(error_msg, exc_info=True)
-                processing_errors.append({"chapter": chapter_title, "error": str(e)})
+                logger.error(f"Failed to process document chunk: {str(e)}")
+                continue
 
-        # Add processed documents to vectorstore
+        # Add remaining documents
         if processed_documents:
             try:
+                vector_store.upsert(processed_documents)
                 logger.info(
-                    f"Adding {len(processed_documents)} processed chunks to vectorstore"
+                    f"Successfully added {len(processed_documents)} documents to vectorstore"
                 )
-                vector_store.add_documents(processed_documents)
-                logger.info("Successfully added documents to vectorstore")
             except Exception as e:
                 raise DocumentProcessingError(
                     "Failed to add documents to vectorstore",
                     details={
-                        "path": doc_path,
+                        "path": str(doc_path),
                         "num_documents": len(processed_documents),
                         "error": str(e),
                     },
@@ -174,22 +209,12 @@ def process_document(
         else:
             logger.warning("No documents were processed successfully")
 
-        # Report processing errors if any occurred
-        if processing_errors:
-            logger.warning(
-                "Document processing completed with errors",
-                extra={
-                    "num_errors": len(processing_errors),
-                    "errors": processing_errors,
-                },
-            )
-
     except DocumentProcessingError:
         raise
     except Exception as e:
         raise DocumentProcessingError(
             "Unexpected error during document processing",
-            details={"path": doc_path, "error": str(e)},
+            details={"path": str(doc_path), "error": str(e)},
         )
 
 
@@ -202,21 +227,5 @@ def _clean_chunk_text(text: str) -> str:
 
 
 if __name__ == "__main__":
-    # Add project root to Python path
-    project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
-
-    try:
-        # Example usage with custom configuration
-        config = ProcessingConfig(
-            chunk_size=1500,
-            chunk_overlap=150,
-            skip_chapters=["Table of Contents", "Index"],
-        )
-
-        process_document(
-            "C:/Projekte/Data_Science/Advanced_RAG_Web-Application/data/Chapter4.pdf",
-            config=config,
-        )
-    except DocumentProcessingError as e:
-        logger.error("Document processing failed: %s", str(e))
+    load_dotenv()
+    logging.basicConfig(level=logging.INFO)

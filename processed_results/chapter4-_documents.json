@@ -1,0 +1,93 @@
+[
+  {
+    "page_content": "Figure 4.1 The linear regression model (4.3) can be ex- pressed as a simple neural network diagram involving a single layer of parameters. Here each basis function øj(x) is represented by an input node, with the solid node repre- senting the 'bias' basis function do, and the function y(x, w) is represented by an output node. Each of the parameters wj is shown by a line connecting the corresponding basis function to the output.",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "",
+      "page_number": 113,
+      "figure_references": [
+        "Figure 4.1"
+      ],
+      "formula_references": [
+        "(4.3)"
+      ]
+    }
+  },
+  {
+    "page_content": "Before the advent of deep learning it was common practice in machine learning to use some form of fixed pre-processing of the input variables x, also known as fea- ture extraction, expressed in terms of a set of basis functions {{j(x)}. The goal was to choose a sufficiently powerful set of basis functions that the resulting learning task could be solved using a simple network model. Unfortunately, it is very difficult to hand-craft suitable basis functions for anything but the simplest applications. Deep learning avoids this problem by learning the required nonlinear transformations of the data from the data set itself.\nWe have already encountered an example of a regression problem when we dis- cussed curve fitting using polynomials. The polynomial function (1.1) can be ex- pressed in the form (4.3) if we consider a single input variable x and if we choose basis functions defined by øj(x) = x3. There are many other possible choices for the basis functions, for example",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "",
+      "page_number": 113,
+      "figure_references": [],
+      "formula_references": [
+        "(1.1)",
+        "(4.3)"
+      ]
+    }
+  },
+  {
+    "page_content": "Øj(x) = exp { (x- Mj) 2) 2s2 }\nwhere the pj govern the locations of the basis functions in input space, and the parameter s governs their spatial scale. These are usually referred to as 'Gaussian' basis functions, although it should be noted that they are not required to have a probabilistic interpretation. In particular the normalization coefficient is unimportant because these basis functions will be multiplied by learnable parameters wj.\nAnother possibility is the sigmoidal basis function of the form\nØj(x) = 0 s )\nwhere o (a) is the logistic sigmoid function defined by\nσ(α) = 1 + exp(-a) 1\nEquivalently, we can use the tanh function because this is related to the logistic sigmoid by tanh(a) = 20(2a) - 1, and so a general linear combination of logistic sigmoid functions is equivalent to a general linear combination of tanh functions in the sense that they can represent the same class of input-output functions. These various choices of basis function are illustrated in Figure 4.2.",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "",
+      "page_number": 113,
+      "figure_references": [
+        "Figure 4.2"
+      ],
+      "formula_references": []
+    }
+  },
+  {
+    "page_content": "Figure 4.2 Examples of basis functions, showing polynomials on the left, Gaussians of the form (4.4) in the centre, and sigmoidal basis functions of the form (4.5) on the right.",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "page_number": 114,
+      "figure_references": [
+        "Figure 4.2"
+      ],
+      "formula_references": [
+        "(4.4)",
+        "(4.5)"
+      ]
+    }
+  },
+  {
+    "page_content": "Yet another possible choice of basis function is the Fourier basis, which leads to an expansion in sinusoidal functions. Each basis function represents a specific fre- quency and has infinite spatial extent. By contrast, basis functions that are localized to finite regions of input space necessarily comprise a spectrum of different spatial frequencies. In signal processing applications, it is often of interest to consider basis functions that are localized in both space and frequency, leading to a class of func- tions known as wavelets (Ogden, 1997; Mallat, 1999; Vidakovic, 1999). These are also defined to be mutually orthogonal, to simplify their application. Wavelets are most applicable when the input values live on a regular lattice, such as the successive time points in a temporal sequence or the pixels in an image.",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "page_number": 114,
+      "figure_references": [],
+      "formula_references": []
+    }
+  },
+  {
+    "page_content": "Most of the discussion in this chapter, however, is independent of the choice of basis function set, and so we will not specify the particular form of the basis func- tions, except for numerical illustration. Furthermore, to keep the notation simple, we will focus on the case of a single target variable t, although we will briefly outline the modifications needed to deal with multiple target variables.",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "page_number": 114,
+      "figure_references": [],
+      "formula_references": []
+    }
+  },
+  {
+    "page_content": "We solved the problem of fitting a polynomial function to data by minimizing a sum-of-squares error function, and we also showed that this error function could be motivated as the maximum likelihood solution under an assumed Gaussian noise model. We now return to this discussion and consider the least-squares approach, and its relation to maximum likelihood, in more detail.\nAs before, we assume that the target variable t is given by a deterministic func- tion y(x, w) with additive Gaussian noise so that\nt = y(x, w) + €\nwhere e is a zero-mean Gaussian random variable with variance o2. Thus, we can write\np(t|x, w,o2)=N(t|y(x,w), o2).",
+    "metadata": {
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "4.1.2 Likelihood function",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "page_number": 114,
+      "figure_references": [],
+      "formula_references": []
+    }
+  }
+]

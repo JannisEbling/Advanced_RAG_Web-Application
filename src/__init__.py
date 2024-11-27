@@ -9,7 +9,7 @@ from . import components
 from . import pipelines
 
 # Direct imports for commonly used components
-from .logging import logger, setup_logging
+from .log_utils import logger, setup_logging
 from .exception.exception import (
     RAGPipelineError,
     DocumentProcessingError,
@@ -25,17 +25,15 @@ setup_logging()
 
 __all__ = [
     # Submodules
-    'components',
-    'pipelines',
-    
+    "components",
+    "pipelines",
     # Direct access to logger
-    'logger',
-    'setup_logging',
-    
+    "logger",
+    "setup_logging",
     # Direct access to exceptions
-    'RAGPipelineError',
-    'DocumentProcessingError',
-    'RetrievalError',
-    'GenerationError',
-    'RoutingError',
+    "RAGPipelineError",
+    "DocumentProcessingError",
+    "RetrievalError",
+    "GenerationError",
+    "RoutingError",
 ]

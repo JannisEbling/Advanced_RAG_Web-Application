@@ -2,8 +2,8 @@ from functools import wraps
 from typing import Callable, Any
 
 from langfuse import Langfuse
+from src.log_utils import logger
 
-from src import logger
 from src.secure.secrets import secrets
 
 

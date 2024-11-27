@@ -2,35 +2,18 @@
 description: Template for hallucination detection
 author: Jannis Ebling
 ---
-Analyze if the given response contains hallucinations (information not supported by the context).
+Determine if the response contains any information not supported by the context.
 
 Context: {{ context }}
 Response: {{ response }}
 
-Think through this step-by-step:
-1. What are the key claims made in the response?
-2. Which claims are supported by the context?
-3. Which claims lack support or contradict the context?
+Instructions:
+1. Compare the response against the context
+2. Check if all claims in the response are supported by the context
+3. Return a JSON object with:
+   - is_hallucination: true if ANY unsupported claims, false otherwise
+   - confidence_score: between 0.0 and 1.0
 
-Examples:
+Example output: {"is_hallucination": false, "confidence_score": 0.95}
 
-Example 1:
-Context: "The cat is black and sleeps on the couch."
-Response: "The black cat sleeps on the couch and likes fish."
-Analysis:
-- Claims: 1) cat is black 2) sleeps on couch 3) likes fish
-- Supported: 1, 2
-- Unsupported: 3 (no mention of fish)
-Result: {"is_hallucination": true, "confidence_score": 0.9}
-
-Example 2:
-Context: "Python was created by Guido van Rossum in 1991."
-Response: "Python was created by Guido van Rossum in the early 1990s."
-Analysis:
-- Claims: 1) created by Guido 2) created in early 1990s
-- Supported: both claims (1991 is early 1990s)
-Result: {"is_hallucination": false, "confidence_score": 0.95}
-
-Provide a JSON response with:
-- is_hallucination: boolean indicating if unsupported claims exist
-- confidence_score: 0-1 score (1 = completely certain)
+Analyze and respond:

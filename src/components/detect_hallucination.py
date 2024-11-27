@@ -5,13 +5,13 @@ from typing import List, Dict, Any
 
 from src.components.llm_factory import LLMFactory
 from src.prompts.prompt_manager import PromptManager
-from src.exception.exception import MultiAgentRAGException
-from src.logging import logger
-from src.components.detect_hallucination import HallucinationDetector
+from src.exception.exception import RAGPipelineError
+from src.log_utils import logger
 
 
 class HallucinationDetectionResponse(BaseModel):
     """Response model for hallucination detection with confidence scoring."""
+
     decision_reason: str = Field(
         description="Detailed explanation of why the model thinks this is a hallucination or not, including specific examples and evidence"
     )
@@ -35,44 +35,36 @@ def is_answer_grounded_on_context(state):
     """
     try:
         logger.info("Starting hallucination detection process.")
-        context = state["reranked_documents"]
-        answer = state["response"]
+        context = state.reranked_documents
+        response = state.response
 
-        logger.debug("Context for grounding check: %s", context[:100])
-        logger.debug("Answer to check for grounding: %s", answer[:100])
+        # logger.debug("Context for grounding check: %s", context[:100])
+        # logger.debug("Answer to check for grounding: %s", response[:100])
 
         # Get the prompt from PromptManager
-        prompt = PromptManager.get_prompt("hallucination_detection_prompt", 
-                                        context=context,
-                                        answer=answer)
+        prompt = PromptManager.get_prompt(
+            "hallucination_detection_prompt", context=context, response=response
+        )
 
         # Get LLM with structured output
         llm = LLMFactory(provider="azure")
         result = llm.create_completion(
             response_model=HallucinationDetectionResponse,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
 
-        logger.debug("Decision reasoning: %s", result.decision_reason)
-        logger.debug("Is hallucination: %s", result.is_hallucination)
-        logger.debug("Confidence score: %.2f", result.confidence_score)
+        # logger.debug("Decision reasoning: %s", result.decision_reason)
+        # logger.debug("Is hallucination: %s", result.is_hallucination)
+        # logger.debug("Confidence score: %.2f", result.confidence_score)
 
         # Store the hallucination detection results in state for potential use downstream
-        state["hallucination_detection"] = {
-            "decision_reason": result.decision_reason,
-            "is_hallucination": result.is_hallucination,
-            "confidence_score": result.confidence_score
-        }
+        state.is_hallucination = result.is_hallucination
+        state.response_confidence = result.confidence_score
 
-        if not result.is_hallucination and result.confidence_score >= 0.7:
-            logger.info("Answer is grounded on facts with high confidence")
-            return "end"
-        else:
-            logger.info("Answer may be hallucinated or confidence is low, regenerating response")
-            return "generate_alternative_response"
+        return state
 
     except Exception as e:
         logger.error("An error occurred during hallucination detection", exc_info=True)
-        raise MultiAgentRAGException(
+        raise RAGPipelineError(
             "Failed to check if answer is grounded on facts", sys
         ) from e

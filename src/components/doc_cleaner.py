@@ -3,7 +3,8 @@ import re
 import fitz
 from langchain.schema import Document
 
-from src import logger, DocumentProcessingError
+from src.log_utils import logger
+from src.exception.exception import DocumentProcessingError
 
 
 def replace_t_with_space(text):

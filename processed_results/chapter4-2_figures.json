@@ -1,0 +1,118 @@
+[
+  {
+    "figure_reference": "Figure 4.1",
+    "description": "Figure 4.1 The linear regression model (4.3) can be ex- pressed as a simple neural network diagram involving a single layer of parameters. Here each basis function øj(x) is represented by an input node, with the solid node repre- senting the 'bias' basis function do, and the function y(x, w) is represented by an output node. Each of the parameters wj is shown by a line connecting the corresponding basis function to the output.",
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          0.9671,
+          0.9003,
+          4.1649,
+          0.9029,
+          4.1638,
+          2.2994,
+          0.9659,
+          2.2969
+        ]
+      }
+    ],
+    "metadata": {
+      "page_number": 113,
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "",
+      "figure_references": [],
+      "formula_references": [
+        "(4.3)"
+      ]
+    }
+  },
+  {
+    "figure_reference": "Figure 4.2",
+    "description": "Figure 4.2 Examples of basis functions, showing polynomials on the left, Gaussians of the form (4.4) in the centre, and sigmoidal basis functions of the form (4.5) on the right.",
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.4307,
+          3.0128,
+          6.5671,
+          3.0129,
+          6.5671,
+          3.3106,
+          0.4307,
+          3.3106
+        ]
+      }
+    ],
+    "metadata": {
+      "page_number": 114,
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "figure_references": [],
+      "formula_references": [
+        "(4.4)"
+      ]
+    }
+  },
+  {
+    "figure_reference": "Figure 4.1",
+    "description": "Figure 4.1 The linear regression model (4.3) can be ex- pressed as a simple neural network diagram involving a single layer of parameters. Here each basis function øj(x) is represented by an input node, with the solid node repre- senting the 'bias' basis function do, and the function y(x, w) is represented by an output node. Each of the parameters wj is shown by a line connecting the corresponding basis function to the output.",
+    "locations": [
+      {
+        "page": 1,
+        "polygon": [
+          0.9671,
+          0.9003,
+          4.1649,
+          0.9029,
+          4.1638,
+          2.2994,
+          0.9659,
+          2.2969
+        ]
+      }
+    ],
+    "metadata": {
+      "page_number": 113,
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "4.1.2 Likelihood function",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "figure_references": [],
+      "formula_references": [
+        "(4.3)"
+      ]
+    }
+  },
+  {
+    "figure_reference": "Figure 4.2",
+    "description": "Figure 4.2 Examples of basis functions, showing polynomials on the left, Gaussians of the form (4.4) in the centre, and sigmoidal basis functions of the form (4.5) on the right.",
+    "locations": [
+      {
+        "page": 2,
+        "polygon": [
+          0.4307,
+          3.0128,
+          6.5671,
+          3.0129,
+          6.5671,
+          3.3106,
+          0.4307,
+          3.3106
+        ]
+      }
+    ],
+    "metadata": {
+      "page_number": 114,
+      "section_heading": "4.1. Linear Regression",
+      "subsection_heading": "4.1.2 Likelihood function",
+      "page_header": "4. SINGLE-LAYER NETWORKS: REGRESSION",
+      "figure_references": [],
+      "formula_references": [
+        "(4.4)"
+      ]
+    }
+  }
+]

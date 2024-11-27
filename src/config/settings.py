@@ -1,12 +1,13 @@
 import os
 from functools import lru_cache
 from typing import Optional, Literal
+from datetime import timedelta
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-from src.config.logger import logger
-from src.exceptions import RAGPipelineError
+from src.log_utils import logger
+from src.exception.exception import RAGPipelineError
 
 
 class Config:
@@ -34,12 +35,12 @@ class OpenAISettings(LLMProviderSettings):
     default_model: str = "gpt-4"
 
 
-class AzureOpenAISettings(LLMProviderSettings):
+class AzureSettings(LLMProviderSettings):
     api_key: str = os.getenv("AZURE_OPENAI_API_KEY", "")
-    api_base: str = os.getenv("AZURE_OPENAI_API_BASE", "")
+    api_endpoint: str = os.getenv("AZURE_OPENAI_API_ENDPOINT", "")
     api_version: str = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
     default_model: str = os.getenv("AZURE_OPENAI_MODEL", "gpt-4")
-    deployment_id: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID", "")
+    deployment_id: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID", "Answering_35_0125")
 
 
 class AnthropicSettings(LLMProviderSettings):
@@ -64,12 +65,16 @@ class OpenAIEmbeddingSettings(EmbeddingProviderSettings):
     default_model: str = "text-embedding-3-large"
 
 
-class AzureOpenAIEmbeddingSettings(EmbeddingProviderSettings):
+class AzureEmbeddingSettings(EmbeddingProviderSettings):
     api_key: str = os.getenv("AZURE_OPENAI_API_KEY", "")
-    api_base: str = os.getenv("AZURE_OPENAI_API_BASE", "")
+    api_endpoint: str = os.getenv("AZURE_OPENAI_API_ENDPOINT", "")
     api_version: str = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
-    default_model: str = os.getenv("AZURE_OPENAI_EMBEDDING_MODEL", "text-embedding-3-large")
-    deployment_id: str = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_ID", "")
+    default_model: str = os.getenv(
+        "AZURE_OPENAI_EMBEDDING_MODEL", "text-embedding-3-large"
+    )
+    deployment_id: str = os.getenv(
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_ID", "Embedding_Small"
+    )
 
 
 class HuggingFaceEmbeddingSettings(EmbeddingProviderSettings):
@@ -78,25 +83,42 @@ class HuggingFaceEmbeddingSettings(EmbeddingProviderSettings):
     normalize_embeddings: bool = True
 
 
+class VectorStoreSettings(BaseSettings):
+    """Configuration for vector store."""
+
+    document_table: str = os.getenv("VECTOR_STORE_DOC_TABLE", "document_embeddings")
+    figure_table: str = os.getenv("VECTOR_STORE_FIG_TABLE", "figures")
+    formula_table: str = os.getenv("VECTOR_STORE_FOR_TABLE", "formulas")
+    embedding_dimensions: int = 1536
+    time_partition_interval: timedelta = timedelta(days=7)
+    service_url: str = os.getenv(
+        "TIMESCALE_DATABASE_URL",
+        "postgresql://postgres:password@localhost:5433/postgres",
+    )
+
+
 class Settings(BaseSettings):
     app_name: str = "Advanced RAG Web Application"
     environment: Literal["development", "production"] = "development"
     vector_db_path: str = os.getenv("VECTOR_DB_PATH", "./data/vector_db")
-    
+
     # Default providers
     default_llm_provider: Literal["azure", "openai", "anthropic", "llama"] = "azure"
     default_embedding_provider: Literal["azure", "openai", "huggingface"] = "azure"
-    
+
     # Provider settings
     openai: OpenAISettings = OpenAISettings()
-    azure_openai: AzureOpenAISettings = AzureOpenAISettings()
+    azure: AzureSettings = AzureSettings()
     anthropic: AnthropicSettings = AnthropicSettings()
     llama: LlamaSettings = LlamaSettings()
-    
+
     # Embedding settings
     openai_embedding: OpenAIEmbeddingSettings = OpenAIEmbeddingSettings()
-    azure_openai_embedding: AzureOpenAIEmbeddingSettings = AzureOpenAIEmbeddingSettings()
+    azure_embedding: AzureEmbeddingSettings = AzureEmbeddingSettings()
     huggingface_embedding: HuggingFaceEmbeddingSettings = HuggingFaceEmbeddingSettings()
+
+    # Vector store settings
+    vector_store: VectorStoreSettings = VectorStoreSettings()
 
 
 @lru_cache()
