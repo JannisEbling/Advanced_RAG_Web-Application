@@ -32,7 +32,7 @@ Instructions:
 5. Maintain technical accuracy while being accessible
 
 Guidelines for Using Resources:
-- Figures: Use when they illustrate concepts visually (e.g., "As shown in Figure X..."), Use the caption as information about the figure
+- Figures: Use them whenever they illustrate concepts visually (e.g., "As shown in Figure X..."), Use the caption as information about the figure
 - Formulas: Include when mathematical precision is needed
 - Context: Reference specific documents based on their relevance scores
 
@@ -59,4 +59,14 @@ Now generate a response that:
 
 Provide a JSON response with:
 - response: generated response
-- figures: List of paths to figures that you referenced in the response
+- figures: List of paths to figures that you referenced in the response, only add figures if you refernce figures with Figure X... in the response
+- confidence_score: A score between 0.0 and 1.0 indicating your confidence in the response based on:
+  * How well the available context matches the query
+  * The completeness and accuracy of your response
+  * The reliability of the sources used
+  
+Example scoring:
+- 0.9-1.0: Perfect match with comprehensive answer using high-quality sources
+- 0.7-0.8: Good match with solid answer but some minor gaps
+- 0.4-0.6: Partial match with basic answer
+- 0.1-0.3: Poor match with incomplete answer

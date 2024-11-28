@@ -15,6 +15,11 @@ class GenerationResponse(BaseModel):
     figures: List[str] = Field(
         description="List of paths to figures that got referenced in the response"
     )
+    confidence_score: float = Field(
+        description="Confidence score for the generated response (0-1)",
+        ge=0.0,
+        le=1.0
+    )
 
 
 class ResponseGenerator:
@@ -98,10 +103,12 @@ class ResponseGenerator:
 
             logger.info("Successfully generated response")
             logger.debug("Response length: %d chars", len(result.response))
+            logger.debug("Confidence score: %.2f", result.confidence_score)
 
             # Update state with response and sources
             state.response = result.response
             state.figure_paths = result.figures
+            state.response_confidence = result.confidence_score
             return state
 
         except GenerationError:

@@ -102,7 +102,7 @@ def invoke(user_input: str) -> dict:
         return {
             "response": output.get("response", "No response generated"),
             "figure_paths": output.get("figure_paths", []),
-            # "response_confidence": output.get("response_confidence", 0.0),
+            "response_confidence": output.get("response_confidence", 0.0),
             "reranked_documents": output.get("reranked_documents", []),
         }
     except Exception as e:
@@ -186,7 +186,7 @@ def _create_workflow() -> StateGraph:
 if __name__ == "__main__":
     # Example usage with error handling
     try:
-        question = "Tell me something about basis functions?"
+        question = "tell me about basis functions"
         result = invoke(question)
         print(f"Response: {result.get('response', 'No response generated')}")
         print(f"Confidence: {result.get('response_confidence', 0):.2f}")

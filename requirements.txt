@@ -29,3 +29,5 @@ PyMuPDF>=1.19.0
 python-frontmatter
 langfuse
 timescale_vector
+arxiv
+cohere

@@ -2,6 +2,7 @@ import logging
 import time
 from typing import Any, List, Optional, Tuple, Union, Literal
 from datetime import datetime, timedelta
+import cohere
 from typing import Dict, List, Tuple, Any
 from langchain.docstore.document import Document
 from timescale_vector.client import uuid_from_time
@@ -19,6 +20,7 @@ class VectorStore:
         """Initialize vector store with embedding provider."""
         self.settings = get_settings()
         self.embedding_model = EmbeddingFactory(provider).model
+        # self.cohere_client = cohere.ClientV2(api_key=self.settings.cohere.api_key)
 
         # Initialize vector store clients for documents and figures
         self.doc_client = client.Sync(
@@ -124,7 +126,68 @@ class VectorStore:
             f"Inserted {len(records)} documents into {self.settings.vector_store.document_table}"
         )
 
-    def search(
+    def hybrid_search(
+        self,
+        query: str,
+        keyword_k: int = 2,
+        semantic_k: int = 2,
+        rerank: bool = False,
+        top_n: int = 5,
+    ) -> pd.DataFrame:
+        """
+        Perform a hybrid search combining keyword and semantic search results,
+        with optional reranking using Cohere.
+
+        Args:
+            query: The search query string.
+            keyword_k: The number of results to return from keyword search. Defaults to 5.
+            semantic_k: The number of results to return from semantic search. Defaults to 5.
+            rerank: Whether to apply Cohere reranking. Defaults to True.
+            top_n: The number of top results to return after reranking. Defaults to 5.
+
+        Returns:
+            A pandas DataFrame containing the combined search results with a 'search_type' column.
+
+        Example:
+            results = vector_store.hybrid_search("shipping options", keyword_k=3, semantic_k=3, rerank=True, top_n=5)
+        """
+        list_of_columns = [
+            "id",
+            "contents",
+            "search_type",
+            "page_number",
+            "subsection_heading",
+            "formula_references",
+            "figure_references",
+        ]
+        # Perform keyword search
+        keyword_results = self.keyword_search(
+            query, limit=keyword_k, return_dataframe=True
+        )
+        keyword_results["search_type"] = "keyword"
+        keyword_results = keyword_results[list_of_columns]
+
+        # Perform semantic search
+        semantic_results = self.semantic_search(
+            query, limit=semantic_k, return_dataframe=True
+        )
+        semantic_results["search_type"] = "semantic"
+        semantic_results = semantic_results[list_of_columns]
+
+        # Combine results
+        combined_results = pd.concat(
+            [keyword_results, semantic_results], ignore_index=True
+        )
+
+        # Remove duplicates, keeping the first occurrence (which maintains the original order)
+        combined_results = combined_results.drop_duplicates(subset=["id"], keep="first")
+
+        if rerank:
+            return self._rerank_results(query, combined_results, top_n)
+
+        return combined_results
+
+    def semantic_search(
         self,
         query_text: str,
         limit: int = 5,
@@ -200,6 +263,91 @@ class VectorStore:
         else:
             return results
 
+    def _create_dataframe_from_results(
+        self,
+        results: List[Tuple[Any, ...]],
+    ) -> pd.DataFrame:
+        """
+        Create a pandas DataFrame from the search results.
+
+        Args:
+            results: A list of tuples containing the search results.
+
+        Returns:
+            A pandas DataFrame containing the formatted search results.
+        """
+        # Convert results to DataFrame
+        df = pd.DataFrame(
+            results, columns=["id", "metadata", "contents", "embedding", "distance"]
+        )
+
+        # Expand metadata column
+        df = pd.concat(
+            [df.drop(["metadata"], axis=1), df["metadata"].apply(pd.Series)], axis=1
+        )
+
+        # Convert id to string for better readability
+        df["id"] = df["id"].astype(str)
+
+        return df
+
+    def keyword_search(
+        self, query: str, limit: int = 5, return_dataframe: bool = True
+    ) -> Union[List[Tuple[str, str, float]], pd.DataFrame]:
+        """
+        Perform a keyword search on the contents of the vector store.
+
+        Args:
+            query: The search query string.
+            limit: The maximum number of results to return. Defaults to 5.
+            return_dataframe: Whether to return results as a DataFrame. Defaults to True.
+
+        Returns:
+            Either a list of tuples (id, contents, rank) or a pandas DataFrame containing the search results
+            with metadata fields expanded into separate columns.
+
+        Example:
+            results = vector_store.keyword_search("shipping options")
+        """
+        search_sql = f"""
+        SELECT id, contents, metadata, ts_rank_cd(to_tsvector('english', contents), query) as rank
+        FROM {self.settings.vector_store.document_table}, websearch_to_tsquery('english', %s) query
+        WHERE to_tsvector('english', contents) @@ query
+        ORDER BY rank DESC
+        LIMIT %s
+        """
+        list_of_columns = [
+            "id",
+            "contents",
+            "search_type",
+            "page_number",
+            "subsection_heading",
+            "formula_references",
+            "figure_references",
+        ]
+        # Use existing database connection
+        with self.db_conn.cursor() as cur:
+            cur.execute(search_sql, (query, limit))
+            results = cur.fetchall()
+
+        if return_dataframe:
+            if not results:
+                return pd.DataFrame(columns=list_of_columns)
+            # Create initial DataFrame
+            df = pd.DataFrame(results, columns=["id", "contents", "metadata", "rank"])
+
+            # Expand metadata column into separate columns
+            df = pd.concat(
+                [df.drop(["metadata"], axis=1), df["metadata"].apply(pd.Series)], axis=1
+            )
+
+            # Convert id to string
+            df["id"] = df["id"].astype(str)
+
+            return df
+        else:
+            return results
+
     def retrieve(
         self, state: Dict[str, Any], limit: int = 3
     ) -> Dict[str, List[Document]]:
@@ -222,18 +370,31 @@ class VectorStore:
             if not hasattr(state, "formulas"):
                 state.formulas = []
 
-            # Get documents from vector search
-            documents = self.search(query, limit=limit)
+            # Get documents using hybrid search
+            documents = self.hybrid_search(
+                query, keyword_k=limit, semantic_k=limit, rerank=False, top_n=limit
+            )
+
+            # Convert DataFrame results to Documents
             state.documents = [
-                Document(page_content=result[2], metadata=result[1])
-                for result in documents
+                Document(
+                    page_content=row.contents,
+                    metadata={
+                        "page_number": row.page_number,
+                        "subsection_heading": row.subsection_heading,
+                        "formula_references": row.formula_references,
+                        "figure_references": row.figure_references,
+                        "search_type": row.search_type,
+                    },
+                )
+                for row in documents.itertuples()
             ]
 
             # Collect unique references
             figure_references = set()
             formula_references = set()
-            for doc in documents:
-                metadata = doc[1]  # metadata is in the second position
+            for doc in state.documents:
+                metadata = doc.metadata
                 if "figure_references" in metadata:
                     # Handle both single references and lists of references
                     refs = metadata["figure_references"]
@@ -489,3 +650,39 @@ class VectorStore:
         """Cleanup database connections"""
         if hasattr(self, "db_conn"):
             self.db_conn.close()
+
+    def _rerank_results(
+        self, query: str, combined_results: pd.DataFrame, top_n: int
+    ) -> pd.DataFrame:
+        """
+        Rerank the combined search results using Cohere.
+
+        Args:
+            query: The original search query.
+            combined_results: DataFrame containing the combined keyword and semantic search results.
+            top_n: The number of top results to return after reranking.
+
+        Returns:
+            A pandas DataFrame containing the reranked results.
+        """
+        rerank_results = self.cohere_client.v2.rerank(
+            model="rerank-english-v3.0",
+            query=query,
+            documents=combined_results["content"].tolist(),
+            top_n=top_n,
+            return_documents=True,
+        )
+
+        reranked_df = pd.DataFrame(
+            [
+                {
+                    "id": combined_results.iloc[result.index]["id"],
+                    "content": result.document,
+                    "search_type": combined_results.iloc[result.index]["search_type"],
+                    "relevance_score": result.relevance_score,
+                }
+                for result in rerank_results.results
+            ]
+        )
+
+        return reranked_df.sort_values("relevance_score", ascending=False)
